@@ -109,3 +109,11 @@ const vehicleService = {
 };
 
 export default vehicleService;
+
+export const getAllCustomers = () => {
+  return axios.get("/api/customers"); // Adjust path if needed
+};
+
+export const addVehicle = (data) => {
+  return axios.post("/api/vehicle", data);
+};
