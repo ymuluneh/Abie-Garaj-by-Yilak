@@ -17,7 +17,7 @@ employeeRouter.post(
 
 employeeRouter.get(
   "/employees",
-  [authMiddleware.verifyToken, authMiddleware.isAdmin],
+ 
   getAllEmployees
 );
 

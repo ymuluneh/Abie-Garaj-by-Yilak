@@ -8,4 +8,5 @@ router.put("/", vehicleController.updateVehicle);
 router.get("/:id", vehicleController.getVehicleById);
 router.get("/customer/:customer_id", vehicleController.getVehiclesByCustomerId);
 
+
 module.exports = router;

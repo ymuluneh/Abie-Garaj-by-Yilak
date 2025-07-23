@@ -17,4 +17,18 @@ router.put("/:id", customerController.updateCustomer);
 // GET /api/customer/:id/vehicles - Get vehicles per customer
 // router.get("/:id/vehicles", customerController.getCustomerVehicles);
 
+router.get("/all", async (req, res) => {
+  try {
+    const result = await customerService.getCustomers(
+      1,
+      10000,
+      "customer_added_date",
+      ""
+    );
+    res.json(result.customers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
