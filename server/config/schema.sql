@@ -89,41 +89,42 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `order_id` INT(11) NOT NULL AUTO_INCREMENT,
   `customer_id` INT(11) NOT NULL,
   `employee_id` INT(11) NOT NULL,
+  `vehicle_id` INT(11),
   `order_date` DATETIME DEFAULT CURRENT_TIMESTAMP,
-  `order_hash` VARCHAR(255),
-  `order_status` VARCHAR(255),
+  `order_status` VARCHAR(50) DEFAULT 'pending',
   PRIMARY KEY (`order_id`),
   FOREIGN KEY (`customer_id`) REFERENCES `customer_identifier`(`customer_id`),
-  FOREIGN KEY (`employee_id`) REFERENCES `employee`(`employee_id`)
-) ENGINE=InnoDB;
+  FOREIGN KEY (`employee_id`) REFERENCES `employee`(`employee_id`),
+  FOREIGN KEY (`vehicle_id`) REFERENCES `customer_vehicle_info`(`vehicle_id`)
+);
 
 CREATE TABLE IF NOT EXISTS `order_info` (
   `order_info_id` INT(11) NOT NULL AUTO_INCREMENT,
-  `order_id` INT(11) NOT NULL UNIQUE,
-  `order_total_price` INT(11),
+  `order_id` INT(11) NOT NULL,
+  `order_total_price` DECIMAL(10,2),
   `order_estimated_completion_date` DATETIME,
   `order_completion_date` DATETIME,
-  `order_additional_requests` VARCHAR(255),
-  `order_additional_requests_completed` INT(11),
+  `order_additional_requests` TEXT,
   PRIMARY KEY (`order_info_id`),
   FOREIGN KEY (`order_id`) REFERENCES `orders`(`order_id`)
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS `common_services` (
   `service_id` INT(11) NOT NULL AUTO_INCREMENT,
   `service_name` VARCHAR(255),
+  `service_description` TEXT,
   PRIMARY KEY (`service_id`)
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS `order_services` (
   `order_service_id` INT(11) NOT NULL AUTO_INCREMENT,
   `order_id` INT(11) NOT NULL,
   `service_id` INT(11) NOT NULL,
-  `service_completed` INT(11),
+  `service_completed` TINYINT(1) DEFAULT 0,
   PRIMARY KEY (`order_service_id`),
   FOREIGN KEY (`order_id`) REFERENCES `orders`(`order_id`),
   FOREIGN KEY (`service_id`) REFERENCES `common_services`(`service_id`)
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS `order_status` (
   `order_status_id` INT(11) NOT NULL AUTO_INCREMENT,
