@@ -1,0 +1,78 @@
+/* AddCustomer.module.css */
+.container {
+  padding: 1rem;
+  font-family: Arial, sans-serif;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-style: italic;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  font-size: 0.875rem;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #999;
+}
+
+.button {
+  padding: 0.75rem;
+  background-color: #333;
+  color: white;
+  border: none;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 1rem;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #a60c0c;
+}
+
+.button:disabled {
+  background-color: #a60c0c;
+  cursor: not-allowed;
+}
+
+.message {
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.success {
+  background-color: #e6ffed;
+  color: #22863a;
+}
+
+.error {
+  background-color: #ffeef0;
+  color: #cb2431;
+}

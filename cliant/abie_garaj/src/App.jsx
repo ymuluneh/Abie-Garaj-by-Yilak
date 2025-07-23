@@ -25,7 +25,7 @@ import About from "./markup/pages/About";
 import Contact from "./markup/pages/Contact"
 import AddCustemer from "./markup/pages/admin/AddCustemer";
 import CustomersPage from "./markup/pages/admin/CustomerList";
-import CustomerProfilePage from "./markup/components/Admin/CustomerProfilePage";
+import CostomerProfil from "./markup/pages/admin/CostomerProfil";
 import EditCustomer from "./markup/pages/admin/EditCustomer";
 import Vehicle from "./markup/pages/admin/Vehicle"
 
@@ -59,7 +59,7 @@ function App() {
         <Route path="/add-vehicle" element={<Vehicle />} />
 
         <Route path="/admin/customers" element={<CustomersPage />} />
-        <Route path="/customer/:id" element={<CustomerProfilePage />} />
+        <Route path="/customer/:id" element={<CostomerProfil />} />
         <Route path="/customer/edit/:id" element={<EditCustomer />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />

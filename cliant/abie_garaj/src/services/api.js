@@ -52,3 +52,8 @@ export const getAllCustomers = () => {
     params: { page: 1, limit: 1000 },
   });
 };
+
+// For vehicle-related API (add this with your other exports)
+export const getCustomerVehicles = (customerId) => {
+  return axios.get(`${VEHICLE_API_BASE_URL}/customer/${customerId}`);
+};
