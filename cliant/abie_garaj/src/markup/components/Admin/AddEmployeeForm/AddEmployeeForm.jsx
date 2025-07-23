@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import employeeService from "../../../../services/employee.service";
+import { useAuth } from "../../../../contexts/AuthContext";
 
 function AddEmployeeForm() {
   const [employee_email, setEmail] = useState("");
@@ -14,6 +15,14 @@ function AddEmployeeForm() {
   const [passwordError, setPasswordError] = useState("");
   const [success, setSuccess] = useState(false);
   const [serverError, setServerError] = useState("");
+
+  // Create a variable to hold the user's token
+  let loggedInEmployeeToken = "";
+  // Destructure the auth hook and get the token
+  const { employee } = useAuth();
+  if (employee && employee.employee_token) {
+    loggedInEmployeeToken = employee.employee_token;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -59,7 +68,10 @@ function AddEmployeeForm() {
     };
 
     try {
-      const response = await employeeService.createEmployee(formData);
+      const response = await employeeService.createEmployee(
+        formData,
+        loggedInEmployeeToken
+      );
       const data = await response.json();
 
       if (!response.ok) {
@@ -152,9 +164,9 @@ function AddEmployeeForm() {
                         }
                         className="custom-select-box"
                       >
-                        <option value={1}>Employee</option>
-                        <option value={2}>Manager</option>
-                        <option value={3}>Admin</option>
+                        <option value={2}>Employee</option>
+                        <option value={3}>Manager</option>
+                        <option value={1}>Admin</option>
                       </select>
                     </div>
 

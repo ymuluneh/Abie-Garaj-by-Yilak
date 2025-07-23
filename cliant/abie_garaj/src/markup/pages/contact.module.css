@@ -1,0 +1,77 @@
+.contactWrapper {
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+}
+
+.contactContent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.mapContainer iframe {
+  border: 0;
+  width: 100%;
+  max-width: 600px;
+  height: 350px;
+  border-radius: 8px;
+}
+
+.addressSection {
+  flex: 1;
+  min-width: 250px;
+}
+
+.addressSection h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.addressSection p {
+  margin-bottom: 1.5rem;
+  color: #555;
+}
+
+.contactItem {
+  margin-bottom: 1rem;
+}
+
+.contactItem strong {
+  display: block;
+  color: #222;
+}
+
+.contactItem span {
+  display: block;
+  color: #666;
+}
+
+.ctaSection {
+  background: red;
+  color: white;
+  padding: 2rem;
+  text-align: center;
+  border-radius: 6px;
+}
+
+.ctaBox {
+  max-width: 700px;
+  margin: auto;
+}
+
+.ctaPhone {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 1rem 0;
+  display: block;
+}
+
+.ctaButton {
+  background: white;
+  color: red;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+}

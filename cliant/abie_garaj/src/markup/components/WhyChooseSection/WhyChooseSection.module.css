@@ -1,0 +1,110 @@
+.whyChooseSection {
+  padding: var(--spacing-xl) 0;
+  background-color: var(--white-color);
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* gap: var(--spacing-xl); */
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+.heading {
+  font-size: 2.5em;
+  margin-bottom: var(--spacing-lg);
+  color: var(--heading-color);
+}
+
+.reasonGrid {
+  display: grid;
+  grid-template-columns: 1fr; /* Single column for reasons */
+  gap: var(--spacing-md);
+}
+
+.reasonItem {
+  display: flex;
+  align-items: flex-start; /* Align icon and text at the top */
+  gap: var(--spacing-md);
+}
+
+.reasonItem .iconWrapper {
+  font-size: 2em;
+  color: var(--primary-color);
+  flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.reasonTitle {
+  font-size: 1.3em;
+  margin-bottom: 5px;
+  color: var(--heading-color);
+}
+
+.reasonDescription {
+  font-size: 0.95em;
+  color: var(--text-color);
+}
+
+.additionalServices {
+  /* No specific styles here, primarily uses the general heading and grid layout */
+}
+
+.imageBox {
+  display: flex;
+  background-color: var(--light-gray-bg);
+  border-radius: 8px;
+  overflow: hidden; /* Ensures image corners are rounded */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.serviceImage {
+  width: 50%; /* Image takes half the width */
+  height: 300px;
+  object-fit: cover;
+}
+
+.textBox {
+  width: 50%; /* Text takes the other half */
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.serviceList {
+  list-style: none;
+  margin-top: var(--spacing-md);
+}
+
+.serviceList li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  color: var(--text-color);
+}
+
+.listIcon {
+  color: var(--primary-color);
+  margin-right: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+  .imageBox {
+    flex-direction: column;
+  }
+  .serviceImage, .textBox {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .heading {
+    font-size: 2em;
+  }
+}

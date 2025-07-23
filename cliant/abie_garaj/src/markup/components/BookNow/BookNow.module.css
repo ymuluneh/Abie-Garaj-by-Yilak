@@ -1,0 +1,61 @@
+.bookNowSection {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+  width: 80%;
+ 
+  padding: 25px 0;
+  margin: 60px auto; /* Overlaps with the section above slightly */
+  position: relative;
+  z-index: 500; /* Ensure it's above other elements if overlapping */
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+.text {
+  font-size: 1.6em;
+  font-weight: bold;
+}
+
+.contactInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.icon {
+  font-size: 1.2em;
+}
+
+.bookNowBtn {
+  background-color: var(--secondary-color);
+  color: var(--white-color);
+  border-radius: 5px;
+  padding: 12px 25px;
+  font-size: 1em;
+}
+
+.bookNowBtn:hover {
+  background-color: darken(var(--secondary-color), 10%);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .container {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    text-align: center;
+  }
+  .text, .contactInfo, .bookNowBtn {
+    width: 100%;
+    justify-content: center; /* Center content */
+  }
+}

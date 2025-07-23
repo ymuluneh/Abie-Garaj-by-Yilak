@@ -1,0 +1,73 @@
+.servicesSection {
+  background-color: var(--light-gray-bg);
+  padding: var(--spacing-xl) 0;
+  text-align: center;
+}
+
+.sectionTitle {
+  font-size: 2.8em;
+  margin-bottom: var(--spacing-xl);
+  color: var(--heading-color);
+}
+
+.serviceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-md);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+.serviceCard {
+  background-color: var(--white-color);
+  padding: var(--spacing-lg);
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.serviceCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.iconWrapper {
+  font-size: 3em;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-md);
+  background-color: var(--light-gray-bg);
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.cardTitle {
+  font-size: 1.5em;
+  margin-bottom: var(--spacing-sm);
+  color: var(--heading-color);
+}
+
+.cardDescription {
+  font-size: 0.95em;
+  color: var(--text-color);
+  line-height: 1.7;
+  flex-grow: 1; /* Allows it to take up available space */
+}
+
+.readMoreLink {
+  margin-top: var(--spacing-md);
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.readMoreLink:hover {
+  text-decoration: underline;
+}

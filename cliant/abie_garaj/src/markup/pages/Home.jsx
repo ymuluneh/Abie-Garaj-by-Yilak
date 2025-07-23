@@ -1,13 +1,29 @@
-// App.jsx
+import React from "react";
 
+import HeroSection from "../components/HeroSection/HeroSection";
+import AboutSection from "../components/AboutSection/AboutSection";
+import ServicesSection from "../components/ServicesSection/ServicesSection";
+import QualitySection from "../components/QualitySection/QualitySection";
+import WhyChooseSection from "../components/WhyChooseSection/WhyChooseSection";
+import FinalCTA from "../components/FinalCTA/FinalCTA";
+import BookNow from "../components/BookNow/BookNow";
 
-function Home() {
+import  "./Home.css";
+
+const HomePage = () => {
   return (
-    <>
-    Home Page
-    <div>Welcome to Abie Garage</div>
-    </>
+    <div>
+    
+      <HeroSection />
+      <AboutSection />
+      <ServicesSection />
+      <QualitySection />
+      <WhyChooseSection />
+      <FinalCTA />
+      <BookNow />
+     
+    </div>
   );
-}
+};
 
-export default Home;
+export default HomePage;

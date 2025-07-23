@@ -1,0 +1,64 @@
+.qualitySection {
+  display: flex;
+  min-height: 400px; /* Or a specific height */
+  background-color: var(--primary-color);
+  color: var(--white-color);
+}
+
+.leftContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  background-color: var(--primary-color); /* Ensure consistent background */
+}
+
+.heading {
+  font-size: 2.5em;
+  margin-bottom: var(--spacing-md);
+  color: var(--white-color);
+}
+
+.description {
+  font-size: 1.1em;
+  line-height: 1.8;
+  margin-bottom: var(--spacing-lg);
+}
+
+.discoverMoreBtn {
+  background-color: var(--white-color);
+  color: var(--primary-color);
+  padding: 12px 25px;
+  font-weight: bold;
+}
+
+.discoverMoreBtn:hover {
+  background-color: #f0f0f0;
+  color: var(--primary-color);
+}
+
+.rightImage {
+  flex: 1;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* The image appears to be an interior car shot, possibly a speedometer or dash */
+  /* If you want an actual image from the screenshot, you'll need to crop it out */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .qualitySection {
+    flex-direction: column;
+  }
+
+  .leftContent, .rightImage {
+    flex: none; /* Reset flex */
+    width: 100%;
+  }
+
+  .rightImage {
+    min-height: 250px; /* Give it some height on small screens */
+  }
+}
