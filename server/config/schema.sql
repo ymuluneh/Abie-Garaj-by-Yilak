@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `customer_info` (
 
 CREATE TABLE IF NOT EXISTS `customer_vehicle_info` (
   `vehicle_id` INT(11) NOT NULL AUTO_INCREMENT,
-  `customer_id` INT(11) NOT NULL UNIQUE,
+  `customer_id` INT(11) NOT NULL,
   `vehicle_year` INT(11),
   `vehicle_make` VARCHAR(255),
   `vehicle_model` VARCHAR(255),

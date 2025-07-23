@@ -1,13 +1,25 @@
-//import employeeRoutes from "./employeeRoutes";
+// Import express
+const express = require("express");
+const Router = express.Router(); // Create new Express Router
+
+// Import route modules
 const employeeRouter = require("./employeeRoute");
 const loginRouter = require("./loginRoute");
-//
-const express = require("express");
-const Router = express.Router();
+const customerRoutes = require("./customerRoutes");
+const vehicleRoutes = require("./vehicle.route"); // Make sure this path is correct
+
+// ... other uses
+Router.use("/vehicle", vehicleRoutes); // This line is already there, ensure it's correct
+
+
+// Mount customer-related routes at /api/customer
+Router.use("/customer", customerRoutes);
+
+// Mount employee-related routes
 Router.use("/employees", employeeRouter);
+
+// Mount login/authentication routes
 Router.use("/employee", loginRouter);
 
-
-
-//export all routes
+// Export all configured routes
 module.exports = Router;

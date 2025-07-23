@@ -1,8 +1,24 @@
 const express = require("express");
-const { addEmployee } = require("../controllers/employeeController");
+const {
+  addEmployee,
+  getAllEmployees,
+} = require("../controllers/employee.controller");
+
+const authMiddleware = require("../middlewares/authMiddleware");
 
 const employeeRouter = express.Router();
 
-employeeRouter.post("/addEmployee", addEmployee); // POST: /api/employees/addEmployee
+// Protected routes
+employeeRouter.post(
+  "/addEmployee",
+  [authMiddleware.verifyToken, authMiddleware.isAdmin],
+  addEmployee
+);
+
+employeeRouter.get(
+  "/employees",
+  [authMiddleware.verifyToken, authMiddleware.isAdmin],
+  getAllEmployees
+);
 
 module.exports = employeeRouter;

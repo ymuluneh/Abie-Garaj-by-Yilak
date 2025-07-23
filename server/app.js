@@ -11,13 +11,18 @@ const app = express();
 
 // 🔹 Middlewares
 //cors allow cross-origin requests only from specfice origin
-app.use(cors({ origin: ["http://localhost:3000", "http://localhost:5173"], credentials: true }));
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://localhost:5173"],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 🔹 Initialize database schema
-//createSchema(); //* Run schema.sql to create DB + tables
+createSchema(); //* Run schema.sql to create DB + tables
 
 // 🔹 Use routes
 app.use("/api", Routes);
