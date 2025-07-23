@@ -138,6 +138,7 @@ INSERT INTO company_roles (company_role_id, company_role_name) VALUES
   (1, 'Admin'),
   (2, 'Employee'),
   (3, 'Manager')
+  
 ON DUPLICATE KEY UPDATE company_role_name = VALUES(company_role_name);
 
 

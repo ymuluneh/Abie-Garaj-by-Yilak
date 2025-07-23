@@ -115,38 +115,29 @@ class OrderService {
     try {
       await connection.beginTransaction();
 
-      // Insert into orders table
+      // 1. Insert into orders table
       const [orderResult] = await connection.query(
-        `
-        INSERT INTO orders (customer_id, employee_id, vehicle_id, order_date, order_status)
-        VALUES (?, ?, ?, NOW(), 'pending')
-      `,
+        `INSERT INTO orders (customer_id, employee_id, vehicle_id) VALUES (?, ?, ?)`,
         [customer_id, employee_id, vehicle_id]
       );
-
       const orderId = orderResult.insertId;
 
-      // Insert into order_info table
+      // 2. Insert into order_info (MISSING IN YOUR CODE)
       await connection.query(
-        `
-        INSERT INTO order_info (order_id, order_additional_requests)
-        VALUES (?, ?)
-      `,
-        [orderId, additional_requests]
+        `INSERT INTO order_info (order_id, order_additional_requests) VALUES (?, ?)`,
+        [orderId, additional_requests || ""]
       );
 
-      // Insert order services
+      // 3. Insert services
       for (const service of services) {
         await connection.query(
-          `
-          INSERT INTO order_services (order_id, service_id)
-          VALUES (?, ?)
-        `,
+          `INSERT INTO order_services (order_id, service_id) VALUES (?, ?)`,
           [orderId, service.service_id]
         );
       }
 
       await connection.commit();
+      // console.log("Order created successfully:", orderId); 
       return orderId;
     } catch (error) {
       await connection.rollback();

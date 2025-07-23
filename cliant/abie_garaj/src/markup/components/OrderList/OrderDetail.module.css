@@ -1,0 +1,108 @@
+.container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.statusContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.statusSelect {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.updateBtn {
+  padding: 6px 12px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.updateBtn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.customerInfo, .vehicleInfo, .servicesInfo, .additionalInfo {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 6px;
+}
+
+.servicesInfo ul {
+  list-style: none;
+  padding: 0;
+}
+
+.servicesInfo li {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.servicesInfo li:last-child {
+  border-bottom: none;
+}
+
+.loading, .notFound {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.contactInfo {
+  flex: 1;
+}
+
+.usefulLinks {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 30px;
+}
+
+.linksColumn {
+  min-width: 150px;
+}
+
+.linksColumn h4 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.linksColumn p {
+  margin: 5px 0;
+  color: #666;
+  font-size: 14px;
+}

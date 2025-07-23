@@ -28,6 +28,9 @@ import CustomersPage from "./markup/pages/admin/CustomerList";
 import CostomerProfil from "./markup/pages/admin/CostomerProfil";
 import EditCustomer from "./markup/pages/admin/EditCustomer";
 import Vehicle from "./markup/pages/admin/Vehicle"
+import OrderList from "./markup/components/OrderList/OrderList";
+import CreateOrder from "./markup/components/OrderList/CreateOrder";
+import OrderDetail from "./markup/components/OrderList/OrderDetail";
 
 
 function App() {
@@ -56,8 +59,11 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/add-vehicle" element={<Vehicle />} />
 
+        <Route path="/admin/orders" element={<OrderList />} />
+        <Route path="/admin/order" element={<CreateOrder />} />
+        <Route path="/admin/orders/:id" element={<OrderDetail />} />
+        <Route path="/add-vehicle" element={<Vehicle />} />
         <Route path="/admin/customers" element={<CustomersPage />} />
         <Route path="/customer/:id" element={<CostomerProfil />} />
         <Route path="/customer/edit/:id" element={<EditCustomer />} />

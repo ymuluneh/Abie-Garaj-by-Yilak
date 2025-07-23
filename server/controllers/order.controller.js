@@ -40,16 +40,25 @@ exports.getOrderById = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 exports.createOrder = async (req, res) => {
   try {
-    const orderId = await orderService.createOrder(req.body);
-    res.status(201).json({ success: true, orderId });
+    // Get employee_id from authenticated user (via JWT)
+    const employee_id = req.employee?.employee_id || req.body.employee_id || 1;
+
+    const orderData = {
+      ...req.body,
+      employee_id, // Ensure employee_id is included
+    };
+
+    const orderId = await orderService.createOrder(orderData);
+    res.status(201).json({ orderId });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: error.message,
+      details: "Failed to create order",
+    });
   }
 };
-
 exports.updateOrder = async (req, res) => {
   try {
     const updated = await orderService.updateOrder(req.params.id, req.body);
