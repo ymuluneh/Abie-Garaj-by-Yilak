@@ -1,0 +1,142 @@
+/* src/markup/components/AddEmployee/AddEmployeeForm.module.css */
+
+.container {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 40px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    font-family: 'Arial', sans-serif;
+    color: #333;
+}
+
+.titleContainer {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.titleContainer h2 {
+    font-size: 2em;
+    color: #333;
+    margin-right: 20px;
+    font-weight: 600;
+}
+
+.titleContainer h2::after {
+    content: '';
+    display: inline-block;
+    width: 60px; /* Length of the red line */
+    height: 3px;
+    background-color: #e44d26; /* Red color from your designs */
+    margin-left: 15px; /* Space between text and line */
+    vertical-align: middle;
+}
+
+/* Form Styling */
+.formGroup {
+    margin-bottom: 20px;
+}
+
+.formGroup input[type="email"],
+.formGroup input[type="text"],
+.formGroup input[type="password"],
+.formGroup select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1em;
+    color: #444;
+    box-sizing: border-box; /* Include padding in width */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background-color: #f9f9f9;
+}
+
+.formGroup input[type="email"]:focus,
+.formGroup input[type="text"]:focus,
+.formGroup input[type="password"]:focus,
+.formGroup select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    outline: none;
+    background-color: #ffffff;
+}
+
+.formGroup select {
+    appearance: none; /* Remove default arrow */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.2-5.4H18.6c-5%200-9.3%201.8-13.2%205.4A17.6%2017.6%200%200%200%200%2082.2c0%204.6%201.8%208.7%205.4%2012.2l128%20127.9c3.9%203.9%209%206.5%2014.2%206.5s10.3-2.6%2014.2-6.5l128-127.9c3.6-3.6%205.4-7.8%205.4-12.2.1-4.6-1.8-8.7-5.4-12.2z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 12px;
+}
+
+.submitButton {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.05em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    background-color: #e44d26; /* Red from design */
+    color: #ffffff;
+    min-width: 180px;
+    margin-top: 10px; /* Space from last input */
+}
+
+.submitButton:hover {
+    background-color: #c93a1c; /* Darker red on hover */
+    transform: translateY(-1px);
+}
+
+.submitButton:disabled {
+    background-color: #f28a71;
+    cursor: not-allowed;
+}
+
+/* Validation messages */
+.validationError {
+    color: #dc3545;
+    font-size: 0.85em;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.validationSuccess {
+    color: #28a745;
+    background-color: #d4edda;
+    border: 1px solid #28a745;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 0.95em;
+}
+
+.serverError { /* Using this for serverError state */
+    color: #dc3545;
+    background-color: #fcebeb;
+    border: 1px solid #dc3545;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 0.95em;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        margin: 20px;
+        padding: 25px;
+    }
+
+    .titleContainer h2 {
+        font-size: 1.8em;
+    }
+
+    .submitButton {
+        width: 100%;
+        min-width: unset;
+    }
+}

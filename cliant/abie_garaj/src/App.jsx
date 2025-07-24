@@ -9,7 +9,6 @@ import "./assets/template_assets/css/style.css";
 import "./assets/template_assets/css/responsive.css";
 import "./assets/template_assets/css/color.css";
 
-
 // Import the custom css file
 import "./assets/styles/custom.css";
 import Header from "./markup/components/Header/Header";
@@ -22,16 +21,18 @@ import ProtectedRoute from "./markup/components/ProtectedRout/ProtectedRoute";
 import Employees from "./markup/pages/admin/Employees";
 import Service from "./markup/pages/Service";
 import About from "./markup/pages/About";
-import Contact from "./markup/pages/Contact"
+import Contact from "./markup/pages/Contact";
 import AddCustemer from "./markup/pages/admin/AddCustemer";
 import CustomersPage from "./markup/pages/admin/CustomerList";
 import CostomerProfil from "./markup/pages/admin/CostomerProfil";
 import EditCustomer from "./markup/pages/admin/EditCustomer";
-import Vehicle from "./markup/pages/admin/Vehicle"
+import Vehicle from "./markup/pages/admin/Vehicle";
 import OrderList from "./markup/components/OrderList/OrderList";
 import CreateOrder from "./markup/components/OrderList/CreateOrder";
 import OrderDetail from "./markup/components/OrderList/OrderDetail";
-
+import ServiceManagement from "./markup/pages/admin/ServiceManagement/ServiceManagement";
+import OrderEdit from "./markup/components/OrderList/OrderEdit";
+import EmployeeEdit from "./markup/components/Admin/EmployeesList/EmployeeEdit";
 
 function App() {
   return (
@@ -59,14 +60,16 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+        <Route path="/admin/employees/edit/:id" element={<EmployeeEdit/>}/>
+        <Route path="/admin/services" element={<ServiceManagement />} />
         <Route path="/admin/orders" element={<OrderList />} />
+        <Route path="/admin/orders/:id/edit" element={<OrderEdit />} />
         <Route path="/admin/order" element={<CreateOrder />} />
         <Route path="/admin/orders/:id" element={<OrderDetail />} />
         <Route path="/add-vehicle" element={<Vehicle />} />
         <Route path="/admin/customers" element={<CustomersPage />} />
-        <Route path="/customer/:id" element={<CostomerProfil />} />
-        <Route path="/customer/edit/:id" element={<EditCustomer />} />
+        <Route path="/admin/customer/:id" element={<CostomerProfil />} />
+        <Route path="/admin/customer/edit/:id" element={<EditCustomer />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
         <Route path="/services" element={<Service />} />

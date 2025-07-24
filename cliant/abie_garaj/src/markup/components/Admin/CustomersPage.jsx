@@ -105,14 +105,14 @@ const CustomersPage = () => {
                     </td>
                     <td className="py-3 px-4 flex space-x-4">
                       <Link
-                        to={`/customer/${customer.customer_id}`}
+                        to={`/admin/customer/${customer.customer_id}`}
                         className="text-blue-500 hover:text-blue-700"
                         title="View"
                       >
                         <FaEye />
                       </Link>
                       <Link
-                        to={`/customer/edit/${customer.customer_id}`}
+                        to={`/admin/customer/edit/${customer.customer_id}`}
                         className="text-green-500 hover:text-green-700"
                         title="Edit"
                       >

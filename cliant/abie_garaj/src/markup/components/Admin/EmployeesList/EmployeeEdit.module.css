@@ -1,0 +1,196 @@
+/* src/markup/components/EmployeeEdit/EmployeeEdit.module.css */
+
+.container {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 40px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    font-family: 'Arial', sans-serif;
+    color: #333;
+}
+
+.titleContainer {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.titleContainer h2 {
+    font-size: 2em;
+    color: #333;
+    margin-right: 20px;
+    font-weight: 600;
+}
+
+.titleContainer h2::after {
+    content: '';
+    display: inline-block;
+    width: 60px; /* Length of the red line */
+    height: 3px;
+    background-color: #e44d26; /* Red color from your designs */
+    margin-left: 15px; /* Space between text and line */
+    vertical-align: middle;
+}
+
+.employeeEmailDisplay {
+    font-size: 1.1em;
+    color: #555;
+    margin-bottom: 30px;
+    font-style: italic;
+}
+
+/* Form Styling */
+.formGroup {
+    margin-bottom: 20px;
+}
+
+.formGroup label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #555;
+    font-size: 0.95em;
+}
+
+.formGroup input[type="text"],
+.formGroup input[type="email"],
+.formGroup select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1em;
+    color: #444;
+    box-sizing: border-box; /* Include padding in width */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background-color: #f9f9f9;
+}
+
+.formGroup input[type="text"]:focus,
+.formGroup input[type="email"]:focus,
+.formGroup select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    outline: none;
+    background-color: #ffffff;
+}
+
+.checkboxGroup {
+    display: flex;
+    align-items: center;
+    margin-top: 25px;
+    margin-bottom: 30px;
+}
+
+.checkboxGroup input[type="checkbox"] {
+    margin-right: 10px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.checkboxGroup label {
+    font-size: 1em;
+    color: #333;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+/* Buttons */
+.buttonGroup {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.updateButton, .cancelButton {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.05em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    min-width: 150px;
+}
+
+.updateButton {
+    background-color: #e44d26; /* Red from design */
+    color: #ffffff;
+}
+
+.updateButton:hover {
+    background-color: #c93a1c; /* Darker red on hover */
+    transform: translateY(-1px);
+}
+
+.updateButton:disabled {
+    background-color: #f28a71;
+    cursor: not-allowed;
+}
+
+.cancelButton {
+    background-color: #6c757d; /* Grey */
+    color: #ffffff;
+}
+
+.cancelButton:hover {
+    background-color: #5a6268;
+    transform: translateY(-1px);
+}
+
+.loading, .error, .notFound, .successMessage {
+    text-align: center;
+    padding: 20px;
+    font-size: 1.1em;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.loading {
+    color: #007bff;
+    background-color: #e7f3ff;
+    border: 1px solid #007bff;
+}
+
+.error {
+    color: #dc3545;
+    background-color: #fcebeb;
+    border: 1px solid #dc3545;
+}
+
+.notFound {
+    color: #6c757d;
+    background-color: #f0f0f0;
+    border: 1px solid #6c757d;
+}
+
+.successMessage {
+    color: #28a745;
+    background-color: #d4edda;
+    border: 1px solid #28a745;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        margin: 20px;
+        padding: 25px;
+    }
+
+    .titleContainer h2 {
+        font-size: 1.8em;
+    }
+
+    .buttonGroup {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .updateButton, .cancelButton {
+        width: 100%;
+        min-width: unset;
+    }
+}

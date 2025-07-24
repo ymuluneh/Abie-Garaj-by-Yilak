@@ -1,20 +1,27 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import employeeService from "../../../../services/employee.service";
 import { useAuth } from "../../../../contexts/AuthContext";
 
+import styles from "./AddEmployeeForm.module.css"; // Import the CSS module
+
 function AddEmployeeForm() {
+  const navigate = useNavigate(); // Initialize navigate
   const [employee_email, setEmail] = useState("");
   const [employee_first_name, setFirstName] = useState("");
   const [employee_last_name, setLastName] = useState("");
   const [employee_phone, setPhoneNumber] = useState("");
   const [employee_password, setPassword] = useState("");
-  const [company_role_id, setCompany_role_id] = useState(1);
+  const [company_role_id, setCompany_role_id] = useState(2); // Default to Employee role
 
   const [emailError, setEmailError] = useState("");
-  const [firstNameRequired, setFirstNameRequired] = useState("");
+  const [firstNameError, setFirstNameError] = useState(""); // Renamed for clarity
+  const [lastNameError, setLastNameError] = useState(""); // Added for last name validation
+  const [phoneError, setPhoneError] = useState(""); // Added for phone validation
   const [passwordError, setPasswordError] = useState("");
   const [success, setSuccess] = useState(false);
   const [serverError, setServerError] = useState("");
+  const [loading, setLoading] = useState(false); // Add loading state
 
   // Create a variable to hold the user's token
   let loggedInEmployeeToken = "";
@@ -26,44 +33,65 @@ function AddEmployeeForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start loading
+    setServerError(""); // Clear previous server errors
+    setSuccess(false); // Clear previous success messages
 
     let valid = true;
 
-    if (!employee_first_name) {
-      setFirstNameRequired("First name is required");
+    // Reset all field errors
+    setEmailError("");
+    setFirstNameError("");
+    setLastNameError("");
+    setPhoneNumber("");
+    setPasswordError("");
+
+    if (!employee_first_name.trim()) {
+      setFirstNameError("First name is required.");
       valid = false;
-    } else {
-      setFirstNameRequired("");
     }
 
-    if (!employee_email) {
-      setEmailError("Email is required");
+    if (!employee_last_name.trim()) {
+      setLastNameError("Last name is required.");
+      valid = false;
+    }
+
+    if (!employee_phone.trim()) {
+      setPhoneError("Phone number is required.");
+      valid = false;
+    } else if (!/^\d{10}$/.test(employee_phone.trim())) {
+      // Basic 10-digit phone validation
+      setPhoneError("Invalid phone number format (e.g., 10 digits).");
+      valid = false;
+    }
+
+    if (!employee_email.trim()) {
+      setEmailError("Email is required.");
       valid = false;
     } else {
       const regex = /^\S+@\S+\.\S+$/;
-      if (!regex.test(employee_email)) {
-        setEmailError("Invalid email format");
+      if (!regex.test(employee_email.trim())) {
+        setEmailError("Invalid email format.");
         valid = false;
-      } else {
-        setEmailError("");
       }
     }
 
     if (!employee_password || employee_password.length < 6) {
-      setPasswordError("Password must be at least 6 characters long");
+      setPasswordError("Password must be at least 6 characters long.");
       valid = false;
-    } else {
-      setPasswordError("");
     }
 
-    if (!valid) return;
+    if (!valid) {
+      setLoading(false); // Stop loading if validation fails
+      return;
+    }
 
     const formData = {
-      email: employee_email,
+      email: employee_email.trim(),
       password: employee_password,
-      first_name: employee_first_name,
-      last_name: employee_last_name,
-      phone: employee_phone,
+      first_name: employee_first_name.trim(),
+      last_name: employee_last_name.trim(),
+      phone: employee_phone.trim(),
       role_id: company_role_id,
     };
 
@@ -78,124 +106,138 @@ function AddEmployeeForm() {
         setServerError(data.message || "Failed to add employee.");
       } else {
         setSuccess(true);
-        setServerError("");
+        // Clear form fields on success
+        setEmail("");
+        setFirstName("");
+        setLastName("");
+        setPhoneNumber("");
+        setPassword("");
+        setCompany_role_id(2); // Reset to default role
+
+        // Navigate after a short delay
         setTimeout(() => {
-          window.location.href = "/";
-        }, 2000);
+          navigate("/admin/employees"); // Redirect to employees list
+        }, 1500);
       }
     } catch (error) {
-      setServerError(error.message || "Request failed.");
+      setServerError(
+        error.message || "Request failed. Please check network connection."
+      );
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
   return (
-    <section className="contact-section">
-      <div className="auto-container">
-        <div className="contact-title">
-          <h2>Add a new employee</h2>
-        </div>
-        <div className="row clearfix">
-          <div className="form-column col-lg-7">
-            <div className="inner-column">
-              <div className="contact-form">
-                <form onSubmit={handleSubmit}>
-                  <div className="row clearfix">
-                    <div className="form-group col-md-12">
-                      {serverError && (
-                        <div className="validation-error" role="alert">
-                          {serverError}
-                        </div>
-                      )}
-                      {success && (
-                        <div className="validation-success" role="alert">
-                          Employee added successfully!
-                        </div>
-                      )}
-                      <input
-                        type="email"
-                        value={employee_email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Employee email"
-                      />
-                      {emailError && (
-                        <div className="validation-error">{emailError}</div>
-                      )}
-                    </div>
-
-                    <div className="form-group col-md-12">
-                      <input
-                        type="text"
-                        value={employee_first_name}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="Employee first name"
-                      />
-                      {firstNameRequired && (
-                        <div className="validation-error">
-                          {firstNameRequired}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="form-group col-md-12">
-                      <input
-                        type="text"
-                        value={employee_last_name}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Employee last name"
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group col-md-12">
-                      <input
-                        type="text"
-                        value={employee_phone}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        placeholder="Employee phone"
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group col-md-12">
-                      <select
-                        value={company_role_id}
-                        onChange={(e) =>
-                          setCompany_role_id(Number(e.target.value))
-                        }
-                        className="custom-select-box"
-                      >
-                        <option value={2}>Employee</option>
-                        <option value={3}>Manager</option>
-                        <option value={1}>Admin</option>
-                      </select>
-                    </div>
-
-                    <div className="form-group col-md-12">
-                      <input
-                        type="password"
-                        value={employee_password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Employee password"
-                      />
-                      {passwordError && (
-                        <div className="validation-error">{passwordError}</div>
-                      )}
-                    </div>
-
-                    <div className="form-group col-md-12">
-                      <button className="theme-btn btn-style-one" type="submit">
-                        <span>Add employee</span>
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              </div>
+    <div className={styles.container}>
+      <div className={styles.titleContainer}>
+        <h2>Add a new employee</h2>
+      </div>
+      <div className={styles.formColumn}>
+        <div className={styles.contactForm}>
+          <form onSubmit={handleSubmit}>
+            <div className={styles.formGroup}>
+              {serverError && (
+                <div className={styles.serverError} role="alert">
+                  {serverError}
+                </div>
+              )}
+              {success && (
+                <div className={styles.validationSuccess} role="alert">
+                  Employee added successfully!
+                </div>
+              )}
+              <input
+                type="email"
+                value={employee_email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Employee email"
+                disabled={loading} // Disable during loading
+              />
+              {emailError && (
+                <div className={styles.validationError}>{emailError}</div>
+              )}
             </div>
-          </div>
+
+            <div className={styles.formGroup}>
+              <input
+                type="text"
+                value={employee_first_name}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Employee first name"
+                disabled={loading}
+              />
+              {firstNameError && (
+                <div className={styles.validationError}>{firstNameError}</div>
+              )}
+            </div>
+
+            <div className={styles.formGroup}>
+              <input
+                type="text"
+                value={employee_last_name}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Employee last name"
+                disabled={loading}
+              />
+              {lastNameError && (
+                <div className={styles.validationError}>{lastNameError}</div>
+              )}
+            </div>
+
+            <div className={styles.formGroup}>
+              <input
+                type="text"
+                value={employee_phone}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="Employee phone (e.g., 555-555-5555)"
+                disabled={loading}
+              />
+              {phoneError && (
+                <div className={styles.validationError}>{phoneError}</div>
+              )}
+            </div>
+
+            <div className={styles.formGroup}>
+              <select
+                value={company_role_id}
+                onChange={(e) => setCompany_role_id(Number(e.target.value))}
+                className={styles.selectBox} // Using a specific class for the select
+                disabled={loading}
+              >
+                <option value={2}>Employee</option>
+                <option value={3}>Manager</option>
+                <option value={1}>Admin</option>
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <input
+                type="password"
+                value={employee_password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Employee password"
+                disabled={loading}
+              />
+              {passwordError && (
+                <div className={styles.validationError}>{passwordError}</div>
+              )}
+            </div>
+
+            <div className={styles.formGroup}>
+              <button
+                className={styles.submitButton}
+                type="submit"
+                disabled={loading} // Disable button when loading
+              >
+                <span>{loading ? "Adding Employee..." : "Add Employee"}</span>
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
- 
+
 export default AddEmployeeForm;

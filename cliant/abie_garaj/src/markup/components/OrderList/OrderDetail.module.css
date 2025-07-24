@@ -1,108 +1,379 @@
+/* Overall container for the detail page */
 .container {
-  padding: 20px;
-  font-family: Arial, sans-serif;
+  max-width: 960px; /* Slightly wider to match the image layout */
+  margin: 30px auto;
+  padding: 40px; /* More padding for a spacious feel */
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Softer shadow */
+  font-family: 'Arial', sans-serif; /* General sans-serif, similar to image */
+  color: #333;
+  line-height: 1.6;
 }
 
+/* Header section (customer name and intro text) */
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 30px;
+  text-align: left; /* Aligns with the image */
 }
 
-.statusContainer {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.statusSelect {
-  padding: 6px 12px;
-  border-radius: 4px;
-  border: none;
-  color: white;
+.header h1 {
+  font-size: 2.5em; /* Larger main heading */
+  color: #333; /* Darker for primary emphasis */
+  margin-bottom: 10px;
   font-weight: bold;
-  cursor: pointer;
 }
 
-.updateBtn {
-  padding: 6px 12px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+.header p {
+  font-size: 0.95em;
+  color: #555;
+  line-height: 1.8;
+  max-width: 700px; /* Control text width for readability */
 }
 
-.updateBtn:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
+/* Horizontal divider line */
+.divider {
+  border-top: 1px solid #eee; /* Light grey divider */
+  margin: 35px 0;
 }
 
-.content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 30px;
+/* General section styling (Customer, Vehicle, Order Details) */
+.section {
+  margin-bottom: 40px;
 }
 
-.customerInfo, .vehicleInfo, .servicesInfo, .additionalInfo {
-  background-color: #f9f9f9;
-  padding: 15px;
-  border-radius: 6px;
-}
-
-.servicesInfo ul {
-  list-style: none;
-  padding: 0;
-}
-
-.servicesInfo li {
+.section h2 {
+  font-size: 1.5em; /* Section titles */
+  color: #555;
   margin-bottom: 15px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
+  font-weight: 600; /* Slightly bolder */
+  text-transform: uppercase; /* As seen in "CUSTOMER INFORMATION" */
+  border-bottom: 2px solid #ddd; /* Underline for section titles */
+  padding-bottom: 8px;
+  display: inline-block; /* Makes border-bottom only as wide as text */
 }
 
-.servicesInfo li:last-child {
-  border-bottom: none;
+.section h3 {
+  font-size: 1.2em; /* Sub-headings like vehicle model, requested services */
+  color: #444;
+  margin-top: 25px;
+  margin-bottom: 15px;
+  font-weight: 600;
 }
 
-.loading, .notFound {
-  text-align: center;
-  padding: 40px;
+.section .subheading { /* For "Current Order Status" and "Additional Requests" */
+    font-size: 1.2em;
+    color: #444;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    font-weight: 600;
+    display: flex; /* To align status badge */
+    align-items: center;
+    gap: 10px;
+}
+
+
+/* Info grids (Customer, Vehicle, Order Details) */
+.infoGrid, .orderInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Flexible columns */
+  gap: 15px 30px; /* Row and column gap */
+  margin-top: 20px;
+}
+
+.infoGrid p, .orderInfoGrid p {
+  font-size: 0.95em;
   color: #666;
 }
 
-.footer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
-}
-
-.contactInfo {
-  flex: 1;
-}
-
-.usefulLinks {
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
-  gap: 30px;
-}
-
-.linksColumn {
-  min-width: 150px;
-}
-
-.linksColumn h4 {
-  margin-bottom: 10px;
+.infoGrid strong, .orderInfoGrid strong {
   color: #333;
 }
 
-.linksColumn p {
-  margin: 5px 0;
+/* Order Status Display (in header and main section) */
+.orderStatusDisplay {
+  font-weight: bold;
+  padding: 5px 12px;
+  border-radius: 4px;
+  color: #ffffff; /* White text on colored background */
+  text-transform: uppercase;
+  font-size: 0.9em;
+  letter-spacing: 0.5px;
+}
+
+/* Status badge (for current status, like "In Progress" in image) */
+.statusBadge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 4px;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 10px; /* Space from the label */
+  white-space: nowrap; /* Keep status on one line */
+  background-color: #f0ad4e; /* Default orange, overridden by JS */
+}
+
+/* Services List */
+.servicesList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Space between individual service items */
+  margin-top: 20px;
+}
+
+.serviceItem {
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 15px 20px;
+  background-color: #fdfdfd;
+  position: relative;
+}
+
+.serviceItem h4 {
+  font-size: 1.1em;
+  color: #333;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.serviceItem p {
+  font-size: 0.9em;
   color: #666;
-  font-size: 14px;
+  margin-bottom: 10px; /* Space before checkbox */
+}
+
+/* Service checkbox and label */
+.serviceCheckbox {
+  display: flex;
+  align-items: center;
+  font-size: 0.9em;
+  color: #555;
+  cursor: pointer;
+  user-select: none; /* Prevent text selection on double click */
+}
+
+.serviceCheckbox input[type="checkbox"] {
+  margin-right: 8px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.completedTag {
+    background-color: #d4edda; /* Light green for completed */
+    color: #155724; /* Dark green text */
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-left: 10px;
+    position: absolute; /* Position at top right */
+    top: 15px;
+    right: 20px;
+}
+
+/* Additional Requests Textarea */
+.additionalTextarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1em;
+  color: #444;
+  box-sizing: border-box;
+  min-height: 100px; /* Sufficient height */
+  resize: vertical; /* Allow vertical resizing */
+  background-color: #f9f9f9;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.additionalTextarea:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+  outline: none;
+  background-color: #ffffff;
+}
+
+/* Status selection dropdown in edit mode */
+.statusSelectWrapper {
+  display: flex;
+  flex-direction: column;
+  margin-top: 15px;
+}
+
+.statusSelectWrapper label {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #555;
+    font-size: 0.95em;
+}
+
+.statusSelect {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1em;
+  color: #444;
+  background-color: #f9f9f9;
+  appearance: none; /* Remove default arrow */
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.2-5.4H18.6c-5%200-9.3%201.8-13.2%205.4A17.6%2017.6%200%200%200%200%2082.2c0%204.6%201.8%208.7%205.4%2012.2l128%20127.9c3.9%203.9%209%206.5%2014.2%206.5s10.3-2.6%2014.2-6.5l128-127.9c3.6-3.6%205.4-7.8%205.4-12.2.1-4.6-1.8-8.7-5.4-12.2z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 12px;
+  width: 250px; /* Fixed width for the select, adjust as needed */
+}
+
+.statusSelect:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+  outline: none;
+  background-color: #ffffff;
+}
+
+
+/* Action buttons (Edit, Save, Cancel, Back) */
+.actions {
+  margin-top: 40px;
+  display: flex;
+  gap: 15px;
+  justify-content: flex-start; /* Align to the left */
+}
+
+.editButton, .saveButton, .cancelButton, .backButton {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.0em;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  min-width: 120px; /* Ensure buttons have a minimum width */
+}
+
+.editButton {
+  background-color: #007bff; /* Blue, common for edit actions */
+  color: #ffffff;
+}
+
+.editButton:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+}
+
+.saveButton {
+  background-color: #28a745; /* Green for save */
+  color: #ffffff;
+}
+
+.saveButton:hover {
+  background-color: #218838;
+  transform: translateY(-1px);
+}
+
+.saveButton:disabled {
+  background-color: #95d3a7;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  background-color: #6c757d; /* Grey for cancel */
+  color: #ffffff;
+}
+
+.cancelButton:hover {
+  background-color: #5a6268;
+  transform: translateY(-1px);
+}
+
+.cancelButton:disabled {
+  background-color: #aeb4b8;
+  cursor: not-allowed;
+}
+
+.backButton {
+  background-color: #f0f0f0; /* Light grey */
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+.backButton:hover {
+  background-color: #e0e0e0;
+  transform: translateY(-1px);
+}
+
+
+/* Loading and error messages */
+.loading, .error, .notFound {
+  text-align: center;
+  padding: 30px;
+  font-size: 1.2em;
+  color: #555;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  margin: 50px auto;
+  max-width: 600px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.error {
+  color: #dc3545; /* Red for errors */
+  background-color: #fcebeb;
+  border: 1px solid #dc3545;
+}
+
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .container {
+    margin: 20px;
+    padding: 25px;
+  }
+
+  .header h1 {
+    font-size: 2em;
+  }
+
+  .section h2 {
+    font-size: 1.3em;
+  }
+
+  .infoGrid, .orderInfoGrid {
+    grid-template-columns: 1fr; /* Stack columns on small screens */
+    gap: 15px;
+  }
+
+  .actions {
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 10px;
+  }
+
+  .editButton, .saveButton, .cancelButton, .backButton {
+    width: 100%; /* Full width buttons */
+    min-width: unset;
+  }
+
+  .statusSelect {
+    width: 100%; /* Full width for status select */
+  }
+
+  .completedTag {
+      position: static; /* Position normally within flow */
+      margin-top: 5px;
+      display: block; /* Take full width */
+      text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+    }
+    .header h1 {
+        font-size: 1.8em;
+    }
+    .section h2 {
+        font-size: 1.1em;
+    }
 }

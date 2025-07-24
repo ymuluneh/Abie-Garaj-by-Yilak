@@ -1,3 +1,4 @@
+// src/services/employee.service.js
 // Import from the env
 const api_url = import.meta.env.VITE_API_URL;
 
@@ -9,7 +10,6 @@ const createEmployee = async (formData, loggedInEmployeeToken) => {
       "Content-Type": "application/json",
       "x-access-token": loggedInEmployeeToken,
     },
-
     credentials: "include", // Only if your backend requires cookies (optional)
     body: JSON.stringify(formData),
   });
@@ -28,30 +28,50 @@ const getAllEmployees = async (token) => {
   return response;
 };
 
-const updateEmployee = (employee, token) => {
-  return fetch(`${api_url}/api/employees/employees/${employee.employee_id}`, {
+// A function to get an employee by ID
+const getEmployeeById = async (id, token) => {
+  const response = await fetch(`${api_url}/api/employees/employees/${id}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "x-access-token": token,
+    },
+  });
+  return response;
+};
+
+// A function to update an employee
+const updateEmployee = async (id, employeeData, token) => {
+  const response = await fetch(`${api_url}/api/employees/employees/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
       "x-access-token": token,
     },
-    body: JSON.stringify(employee),
+    body: JSON.stringify(employeeData),
   });
+  return response;
 };
 
-const deleteEmployee = (id, token) => {
-  return fetch(`${api_url}/api/employees/employees/${id}`, {
+// A function to delete an employee
+const deleteEmployee = async (id, token) => {
+  const response = await fetch(`${api_url}/api/employees/employees/${id}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
       "x-access-token": token,
     },
   });
+  return response;
 };
-// Export the service
+
+// Export the service - ALL FUNCTIONS MUST BE INCLUDED HERE
 const employeeService = {
   createEmployee,
   getAllEmployees,
+  getEmployeeById, 
+  updateEmployee, 
+  deleteEmployee, 
 };
 
 export default employeeService;

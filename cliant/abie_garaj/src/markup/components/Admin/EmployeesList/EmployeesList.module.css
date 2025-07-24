@@ -1,0 +1,144 @@
+/* src/markup/components/EmployeesList/EmployeesList.module.css */
+
+.container {
+  max-width: 1200px; /* Adjust as needed */
+  margin: 30px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  font-family: 'Arial', sans-serif;
+  color: #333;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.titleContainer h2 {
+  font-size: 2em;
+  color: #333;
+  margin-right: 20px;
+  font-weight: 600;
+}
+
+.titleContainer h2::after {
+  content: '';
+  display: inline-block;
+  width: 60px; /* Length of the red line */
+  height: 3px;
+  background-color: #e44d26; /* Red color from your designs */
+  margin-left: 15px; /* Space between text and line */
+  vertical-align: middle;
+}
+
+
+/* Table styling to match the design */
+.employeeTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+}
+
+.employeeTable thead tr {
+  background-color: #f8f8f8; /* Light grey header background */
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.employeeTable th,
+.employeeTable td {
+  padding: 12px 15px;
+  text-align: left;
+  border-right: 1px solid #e0e0e0; /* Vertical dividers */
+}
+
+.employeeTable th:last-child,
+.employeeTable td:last-child {
+  border-right: none; /* No right border on last column */
+}
+
+
+.employeeTable th {
+  font-weight: bold;
+  color: #555;
+  font-size: 0.95em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.employeeTable td {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.employeeTable tbody tr:hover {
+  background-color: #f5f5f5; /* Subtle hover effect */
+}
+
+/* Specific column widths if desired, otherwise content-driven */
+.employeeTable .activeCol { width: 80px; }
+.employeeTable .nameCol { width: 150px; }
+.employeeTable .emailCol { width: 200px; }
+.employeeTable .phoneCol { width: 120px; }
+.employeeTable .dateCol { width: 160px; }
+.employeeTable .roleCol { width: 100px; }
+.employeeTable .actionsCol { width: 100px; text-align: center; }
+
+
+/* Edit/Delete Icons */
+.actions {
+  display: flex;
+  gap: 10px; /* Space between icons */
+  justify-content: center; /* Center icons in the cell */
+}
+
+.actionIcon {
+  cursor: pointer;
+  color: #666;
+  font-size: 1.1em;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.actionIcon:hover {
+  color: #007bff; /* Blue for edit/delete hover */
+  transform: scale(1.1);
+}
+
+.deleteIcon:hover {
+  color: #dc3545; /* Red for delete hover */
+}
+
+
+/* Messages (error, success) */
+.apiError {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.1em;
+  color: #c0392b; /* Red for errors */
+  background-color: #fcebeb;
+  border: 1px solid #c0392b;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+/* No employees found message */
+.noEmployees {
+    text-align: center;
+    padding: 20px;
+    font-size: 1em;
+    color: #777;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+/* If you need a primary container for the whole admin section to give padding/background */
+.adminContentWrapper {
+  padding: 30px; /* Example padding */
+  background-color: #f9f9f9; /* Light background for the content area */
+  min-height: calc(100vh - 180px); /* Adjust based on header/footer height */
+}

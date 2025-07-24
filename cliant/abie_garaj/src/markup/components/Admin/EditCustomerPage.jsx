@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getCustomerById, updateCustomer } from "../../../services/api";
+import { getCustomerById, updateCustomer } from "../../../services/api"; 
 
 const EditCustomerPage = () => {
   const { id } = useParams();
@@ -10,7 +10,7 @@ const EditCustomerPage = () => {
     firstName: "",
     lastName: "",
     phone: "",
-    activeStatus: true,
+    activeStatus: true, // Boolean for checkbox
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -18,25 +18,39 @@ const EditCustomerPage = () => {
 
   useEffect(() => {
     const fetchCustomer = async () => {
+      setLoading(true); // Start loading
+      setError(""); // Clear previous errors
       try {
         const response = await getCustomerById(id);
-        const customer = response.data;
+        const customer = response.data; // Axios puts the response data in .data
+
+        // Safely set formData, converting null/undefined to empty strings
         setFormData({
-          email: customer.customer_email,
-          firstName: customer.customer_first_name,
-          lastName: customer.customer_last_name,
-          phone: customer.customer_phone_number,
-          activeStatus: customer.customer_active_status,
+          email: customer.customer_email || "",
+          firstName: customer.customer_first_name || "",
+          lastName: customer.customer_last_name || "",
+          phone: customer.customer_phone_number || "",
+          activeStatus: customer.customer_active_status === 1, // Convert 0/1 to boolean
         });
-      } catch (error) {
-        setError("Failed to load customer data");
+      } catch (err) {
+        // Changed error to err to avoid conflict with error state
+        console.error("Failed to load customer data:", err);
+        setError(
+          err.response?.data?.message ||
+            "Failed to load customer data. Please try again."
+        );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCustomer();
-  }, [id]);
+    if (id) {
+      fetchCustomer();
+    } else {
+      setLoading(false);
+      setError("No customer ID provided.");
+    }
+  }, [id]); // Depend on 'id' to re-fetch if ID changes
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,14 +67,33 @@ const EditCustomerPage = () => {
     setSuccess("");
 
     try {
-      await updateCustomer(id, formData);
+      // Transform formData to match backend's expected structure
+      const dataToSend = {
+        customer_email: formData.email,
+        customer_first_name: formData.firstName,
+        customer_last_name: formData.lastName,
+        customer_phone_number: formData.phone,
+        customer_active_status: formData.activeStatus ? 1 : 0, // Convert boolean to 1 or 0
+      };
+
+      // Call updateCustomer with the transformed data
+      const response = await updateCustomer(id, dataToSend);
+
+      if (response.status !== 200) {
+        // Check status for non-OK responses
+        throw new Error(response.data?.message || "Failed to update customer.");
+      }
+
       setSuccess("Customer updated successfully!");
-      setTimeout(() => navigate(`/customer/${id}`), 1500);
-    } catch (error) {
-      setError("Failed to update customer. Please try again.");
+      setTimeout(() => navigate(`/admin/customer/${id}`), 1500); // Navigate back to detail page
+    } catch (err) {
+      // Changed error to err to avoid conflict with error state
+      console.error("Error updating customer:", err); // Log the full error for debugging
+      setError(err.message || "Failed to update customer. Please try again."); // Get message from error object
     }
   };
 
+  // Conditional rendering for loading, error, and not found states
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -69,19 +102,34 @@ const EditCustomerPage = () => {
     );
   }
 
+  // If error occurred or customer not found after loading
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-red-700">{error}</div>
+    );
+  }
+
+  // If customer data is fetched but some core field (like email) is missing, it implies not found
+  if (!formData.email) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-red-700">
+        Customer not found.
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Edit Customer</h1>
 
-      {error && (
-        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
-          {error}
-        </div>
-      )}
-
       {success && (
         <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6">
           {success}
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
+          {error}
         </div>
       )}
 
