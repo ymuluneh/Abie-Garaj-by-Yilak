@@ -5,6 +5,7 @@ import {
   getCustomers,
   getCustomerVehicles,
   createOrder,
+  getServices, // Ensure getServices is imported
 } from "../../../services/api";
 import styles from "./CreateOrder.module.css";
 
@@ -43,55 +44,38 @@ const CreateOrder = () => {
   const [additionalRequests, setAdditionalRequests] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [servicesLoading, setServicesLoading] = useState(false);
+  const [servicesLoading, setServicesLoading] = useState(true); // Set to true initially for services
   const [currentEmployee, setCurrentEmployee] = useState(null);
   const navigate = useNavigate();
-
-  // Mock services data (temporary until backend is ready)
-  const mockServices = [
-    {
-      service_id: 1,
-      service_name: "Oil Change",
-      service_price: 89.99,
-      service_description: "Standard oil and filter replacement",
-    },
-    {
-      service_id: 2,
-      service_name: "Tire Rotation",
-      service_price: 49.99,
-      service_description: "Rotating tires for even wear",
-    },
-    {
-      service_id: 3,
-      service_name: "Brake Inspection",
-      service_price: 29.99,
-      service_description: "Complete brake system check",
-    },
-  ];
 
   /**
    * Fetches initial customer data and sets mock services
    */
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true); // Indicate general loading
+      setError("");
       try {
-        const [customersRes] = await Promise.all([
-          getCustomers(1, 100, searchTerm),
-        ]);
+        // Fetch customers
+        const customersRes = await getCustomers(1, 100, searchTerm);
         setCustomers(customersRes.data.customers);
 
-        // Using mock services temporarily
-        setServices(mockServices);
-        setServicesLoading(false);
+        // Fetch actual services from the API
+        setServicesLoading(true); // Indicate services are loading
+        const servicesData = await getServices();
+        setServices(servicesData);
       } catch (error) {
         console.error("Initialization error:", error);
-        setError("Failed to load customer data");
-        setServices(mockServices); // Fallback to mock services
-        setServicesLoading(false);
+        setError(
+          "Failed to load initial data. Please check network and backend."
+        );
+      } finally {
+        setLoading(false); // General loading finished
+        setServicesLoading(false); // Services loading finished
       }
     };
     fetchData();
-  }, [searchTerm]);
+  }, [searchTerm]); // Re-run when searchTerm changes to refresh customer list
 
   /**
    * Fetches vehicles when a customer is selected
@@ -99,15 +83,22 @@ const CreateOrder = () => {
   useEffect(() => {
     if (selectedCustomer) {
       const fetchVehicles = async () => {
+        setLoading(true); // Indicate vehicle loading
         try {
           const response = await getCustomerVehicles(selectedCustomer);
           setVehicles(response.data.vehicles || []);
         } catch (error) {
           console.error("Error fetching vehicles:", error);
           setError("Failed to load customer vehicles");
+          setVehicles([]); // Clear vehicles on error
+        } finally {
+          setLoading(false); // Vehicle loading finished
         }
       };
       fetchVehicles();
+    } else {
+      setVehicles([]); // Clear vehicles if no customer is selected
+      setSelectedVehicle(null); // Deselect vehicle if customer is unselected
     }
   }, [selectedCustomer]);
 
@@ -153,10 +144,15 @@ const CreateOrder = () => {
    * @returns {string} Formatted total price
    */
   const calculateTotal = () => {
-    return selectedServices
-      .reduce((total, serviceId) => {
-        const service = services.find((s) => s.service_id === serviceId);
-        return total + (service?.service_price || 0);
+    return services
+      .reduce((total, service) => {
+        // Iterate through all services to find selected ones
+        if (selectedServices.includes(service.service_id)) {
+          // Ensure service_price is treated as a number, defaulting to 0 if undefined/null
+          // FIX APPLIED HERE: parseFloat to ensure it's a number
+          return total + parseFloat(service?.service_price || 0);
+        }
+        return total;
       }, 0)
       .toFixed(2);
   };
@@ -166,7 +162,7 @@ const CreateOrder = () => {
    */
   const handleSubmit = async () => {
     if (!selectedCustomer || !selectedVehicle) {
-      setError("Please select customer and vehicle");
+      setError("Please select a customer and a vehicle.");
       return;
     }
 
@@ -176,7 +172,7 @@ const CreateOrder = () => {
     try {
       const orderData = {
         customer_id: selectedCustomer,
-        employee_id: currentEmployee?.employee_id || 1, // Fallback to 1 if no employee
+        employee_id: currentEmployee?.employee_id || 1, // Fallback to 1 if no employee (consider making this stricter in prod)
         vehicle_id: selectedVehicle,
         services: selectedServices.map((service_id) => ({ service_id })),
         additional_requests: additionalRequests,
@@ -193,7 +189,7 @@ const CreateOrder = () => {
         response;
 
       if (!orderId) {
-        throw new Error("No order ID received from server");
+        throw new Error("No order ID received from server.");
       }
 
       toast.success(`Order #${orderId} created successfully!`);
@@ -374,7 +370,8 @@ const CreateOrder = () => {
                   <div className={styles.serviceHeader}>
                     <h3>{service.service_name}</h3>
                     <span className={styles.servicePrice}>
-                      ${service.service_price.toFixed(2)}
+                      ${parseFloat(service.service_price ?? 0).toFixed(2)}{" "}
+                      {/* FIX APPLIED HERE (Line 372 in original code) */}
                     </span>
                   </div>
                   <p className={styles.serviceDescription}>
@@ -430,7 +427,7 @@ const CreateOrder = () => {
                 </p>
                 <p>
                   <strong>Mileage:</strong>{" "}
-                  {vehicle?.vehicle_mileage.toLocaleString()} miles
+                  {vehicle?.vehicle_mileage?.toLocaleString() || "N/A"} miles
                 </p>
               </div>
             </div>
@@ -446,13 +443,16 @@ const CreateOrder = () => {
                     return service ? (
                       <div key={serviceId} className={styles.selectedService}>
                         <span>{service.service_name}</span>
-                        <span>${service.service_price.toFixed(2)}</span>
+                        <span>
+                          ${parseFloat(service.service_price ?? 0).toFixed(2)}
+                          {/* FIX APPLIED HERE as well for consistency (Line 480 in original code) */}
+                        </span>
                       </div>
                     ) : null;
                   })
                 ) : (
                   <div className={styles.selectedService}>
-                    <span>General Inspection</span>
+                    <span>No services selected.</span>
                     <span>$0.00</span>
                   </div>
                 )}
@@ -487,7 +487,7 @@ const CreateOrder = () => {
       case 2:
         return !selectedVehicle;
       case 3:
-        return false;
+        return servicesLoading; // Disable if services are still loading
       default:
         return false;
     }

@@ -72,7 +72,7 @@ const VehicleForm = ({ customerId: propCustomerId }) => {
       };
 
       const response = await addVehicle(vehicleData);
-      console.log("[VehicleForm] Vehicle added successfully:", response.data);
+      // console.log("[VehicleForm] Vehicle added successfully:", response.data);
 
       setMessage("Vehicle added successfully!");
       setVehicle({
