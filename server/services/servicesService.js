@@ -1,12 +1,12 @@
 // services/servicesService.js
 const { pool } = require("../config/config"); // Adjust path if your config.js is elsewhere
 
-// Fetch all services from the database
+// Fetch all ACTIVE services from the database, including price
 const getServices = async () => {
   const connection = await pool.getConnection();
   try {
     const [rows] = await connection.query(
-      "SELECT service_id, service_name, service_description FROM common_services"
+      "SELECT service_id, service_name, service_description, service_price FROM common_services WHERE is_active = 1" // Fetch active services and price
     );
     return rows;
   } finally {
@@ -14,12 +14,12 @@ const getServices = async () => {
   }
 };
 
-// Fetch a single service by its ID
+// Fetch a single service by its ID, including price
 const getServiceById = async (serviceId) => {
   const connection = await pool.getConnection();
   try {
     const [rows] = await connection.query(
-      "SELECT service_id, service_name, service_description FROM common_services WHERE service_id = ?",
+      "SELECT service_id, service_name, service_description, service_price, is_active FROM common_services WHERE service_id = ?",
       [serviceId]
     );
     return rows[0]; // Returns the first row if found, undefined otherwise
@@ -28,13 +28,13 @@ const getServiceById = async (serviceId) => {
   }
 };
 
-// Create a new service in the database
-const createService = async (serviceName, serviceDescription) => {
+// Create a new service in the database, now accepting price
+const createService = async (serviceName, serviceDescription, servicePrice) => {
   const connection = await pool.getConnection();
   try {
     const [result] = await connection.query(
-      "INSERT INTO common_services (service_name, service_description) VALUES (?, ?)",
-      [serviceName, serviceDescription]
+      "INSERT INTO common_services (service_name, service_description, service_price, is_active) VALUES (?, ?, ?, 1)", // Default to active
+      [serviceName, serviceDescription, servicePrice]
     );
     return result.insertId; // Returns the ID of the newly inserted service
   } finally {
@@ -42,13 +42,18 @@ const createService = async (serviceName, serviceDescription) => {
   }
 };
 
-// Update an existing service in the database
-const updateService = async (serviceId, serviceName, serviceDescription) => {
+// Update an existing service in the database, now accepting price
+const updateService = async (
+  serviceId,
+  serviceName,
+  serviceDescription,
+  servicePrice
+) => {
   const connection = await pool.getConnection();
   try {
     const [result] = await connection.query(
-      "UPDATE common_services SET service_name = ?, service_description = ? WHERE service_id = ?",
-      [serviceName, serviceDescription, serviceId]
+      "UPDATE common_services SET service_name = ?, service_description = ?, service_price = ? WHERE service_id = ?",
+      [serviceName, serviceDescription, servicePrice, serviceId]
     );
     return result.affectedRows > 0; // Returns true if a row was updated, false otherwise
   } finally {
@@ -56,15 +61,33 @@ const updateService = async (serviceId, serviceName, serviceDescription) => {
   }
 };
 
-// Delete a service from the database
+// Soft delete a service from the database (mark as inactive)
 const deleteService = async (serviceId) => {
   const connection = await pool.getConnection();
   try {
-    const [result] = await connection.query(
-      "DELETE FROM common_services WHERE service_id = ?",
+    // Check if the service is referenced in order_services
+    const [referenced] = await connection.query(
+      "SELECT COUNT(*) AS count FROM order_services WHERE service_id = ?",
       [serviceId]
     );
-    return result.affectedRows > 0; // Returns true if a row was deleted, false otherwise
+
+    if (referenced[0].count > 0) {
+      // If referenced, perform soft delete (set is_active to 0)
+      const [result] = await connection.query(
+        "UPDATE common_services SET is_active = 0 WHERE service_id = ?",
+        [serviceId]
+      );
+      // Return true if a row was updated (i.e., successfully soft-deleted)
+      return result.affectedRows > 0;
+    } else {
+      // If not referenced, perform hard delete
+      const [result] = await connection.query(
+        "DELETE FROM common_services WHERE service_id = ?",
+        [serviceId]
+      );
+      // Return true if a row was deleted (i.e., successfully hard-deleted)
+      return result.affectedRows > 0;
+    }
   } finally {
     connection.release();
   }

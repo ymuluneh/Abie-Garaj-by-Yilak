@@ -113,8 +113,10 @@ CREATE TABLE IF NOT EXISTS `common_services` (
   `service_id` INT(11) NOT NULL AUTO_INCREMENT,
   `service_name` VARCHAR(255),
   `service_description` TEXT,
+  `service_price` DECIMAL(10, 2) DEFAULT 0.00,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1, 
   PRIMARY KEY (`service_id`)
-);
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `order_services` (
   `order_service_id` INT(11) NOT NULL AUTO_INCREMENT,
