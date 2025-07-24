@@ -33,6 +33,7 @@ import OrderDetail from "./markup/components/OrderList/OrderDetail";
 import ServiceManagement from "./markup/pages/admin/ServiceManagement/ServiceManagement";
 import OrderEdit from "./markup/components/OrderList/OrderEdit";
 import EmployeeEdit from "./markup/components/Admin/EmployeesList/EmployeeEdit";
+import AdminDashboard from "./markup/pages/admin/AdminDashbord/AdminDashboard";
 
 function App() {
   return (
@@ -60,6 +61,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/admin" element={<AdminDashboard />}/>
         <Route path="/admin/employees/edit/:id" element={<EmployeeEdit/>}/>
         <Route path="/admin/services" element={<ServiceManagement />} />
         <Route path="/admin/orders" element={<OrderList />} />

@@ -1,26 +1,27 @@
-// src/pages/admin/ServiceManagement/ServiceManagement.jsx
+
 import React, { useState, useEffect } from "react";
-import { toast } from "react-toastify";
 import {
   getServices,
   createService,
   updateService,
   deleteService,
-} from "../../../../services/api"; // Adjust path as needed
-import styles from "./ServiceManagement.module.css"; // Create this CSS module for styling
-import AdminMenu from "../../../components/Admin/AdminMenu/AdminMenu";
+} from "../../../../services/api"; 
 
+import { toast } from "react-toastify"; 
 
 const ServiceManagement = () => {
   const [services, setServices] = useState([]);
-  const [newServiceName, setNewServiceName] = useState("");
-  const [newServiceDescription, setNewServiceDescription] = useState("");
-  const [editingServiceId, setEditingServiceId] = useState(null);
-  const [editingServiceName, setEditingServiceName] = useState("");
-  const [editingServiceDescription, setEditingServiceDescription] =
-    useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [currentService, setCurrentService] = useState({
+    service_id: null,
+    service_name: "",
+    service_description: "",
+  });
+  const [newServiceName, setNewServiceName] = useState("");
+  const [newServiceDescription, setNewServiceDescription] = useState("");
 
   useEffect(() => {
     fetchServices();
@@ -33,9 +34,9 @@ const ServiceManagement = () => {
       const data = await getServices();
       setServices(data);
     } catch (err) {
-      setError("Failed to fetch services. Please try again.");
-      toast.error("Failed to fetch services.");
-      console.error(err);
+      console.error("Failed to fetch services:", err);
+      setError("Failed to load services. Please try again.");
+      toast.error("Failed to load services!");
     } finally {
       setLoading(false);
     }
@@ -44,10 +45,9 @@ const ServiceManagement = () => {
   const handleAddService = async (e) => {
     e.preventDefault();
     if (!newServiceName.trim()) {
-      toast.error("Service Name cannot be empty.");
+      toast.error("Service name cannot be empty.");
       return;
     }
-
     try {
       await createService({
         service_name: newServiceName,
@@ -56,43 +56,41 @@ const ServiceManagement = () => {
       toast.success("Service added successfully!");
       setNewServiceName("");
       setNewServiceDescription("");
+      setShowAddForm(false);
       fetchServices(); // Refresh the list
     } catch (err) {
-      toast.error("Failed to add service.");
-      console.error(err);
+      console.error("Failed to add service:", err);
+      toast.error("Failed to add service. Please try again.");
     }
   };
 
   const handleEditClick = (service) => {
-    setEditingServiceId(service.service_id);
-    setEditingServiceName(service.service_name);
-    setEditingServiceDescription(service.service_description);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingServiceId(null);
-    setEditingServiceName("");
-    setEditingServiceDescription("");
+    setCurrentService({
+      service_id: service.service_id,
+      service_name: service.service_name,
+      service_description: service.service_description,
+    });
+    setShowEditForm(true);
+    setShowAddForm(false); // Hide add form if showing
   };
 
   const handleUpdateService = async (e) => {
     e.preventDefault();
-    if (!editingServiceName.trim()) {
-      toast.error("Service Name cannot be empty.");
+    if (!currentService.service_name.trim()) {
+      toast.error("Service name cannot be empty.");
       return;
     }
-
     try {
-      await updateService(editingServiceId, {
-        service_name: editingServiceName,
-        service_description: editingServiceDescription,
+      await updateService(currentService.service_id, {
+        service_name: currentService.service_name,
+        service_description: currentService.service_description,
       });
       toast.success("Service updated successfully!");
-      handleCancelEdit(); // Exit editing mode
+      setShowEditForm(false);
       fetchServices(); // Refresh the list
     } catch (err) {
-      toast.error("Failed to update service.");
-      console.error(err);
+      console.error("Failed to update service:", err);
+      toast.error("Failed to update service. Please try again.");
     }
   };
 
@@ -103,124 +101,196 @@ const ServiceManagement = () => {
         toast.success("Service deleted successfully!");
         fetchServices(); // Refresh the list
       } catch (err) {
-        toast.error("Failed to delete service.");
-        console.error(err);
+        console.error("Failed to delete service:", err);
+        toast.error("Failed to delete service. Please try again.");
       }
     }
   };
 
+  // Remove the ProtectedRoute wrapper from here
   return (
-    <AdminMenu>
-      <div className={styles.serviceManagementContainer}>
-        <h1>Services We Provide</h1>
+    <section className="section-padding">
+      <div className="container">
+        <div className="row">
+          <div className="col-md-12">
+            <div className="section-title text-center mb-4">
+              <h2>Service Management</h2>
+            </div>
+            <div className="text-right mb-4">
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setShowAddForm(!showAddForm);
+                  setShowEditForm(false); // Hide edit form when showing add form
+                }}
+              >
+                {showAddForm ? "Cancel Add Service" : "Add New Service"}
+              </button>
+            </div>
 
-        {loading && <p>Loading services...</p>}
-        {error && <p className={styles.errorMessage}>{error}</p>}
-
-        {!loading && !error && (
-          <div className={styles.serviceList}>
-            {services.length === 0 ? (
-              <p>No services available. Add a new service below.</p>
-            ) : (
-              services.map((service) => (
-                <div key={service.service_id} className={styles.serviceItem}>
-                  {editingServiceId === service.service_id ? (
-                    <form
-                      onSubmit={handleUpdateService}
-                      className={styles.editServiceForm}
-                    >
+            {showAddForm && (
+              <div className="card mb-4">
+                <div className="card-header">Add New Service</div>
+                <div className="card-body">
+                  <form onSubmit={handleAddService}>
+                    <div className="form-group mb-3">
+                      <label htmlFor="newServiceName">Service Name</label>
                       <input
                         type="text"
-                        value={editingServiceName}
-                        onChange={(e) => setEditingServiceName(e.target.value)}
-                        placeholder="Service Name"
-                        className={styles.editInput}
+                        className="form-control"
+                        id="newServiceName"
+                        value={newServiceName}
+                        onChange={(e) => setNewServiceName(e.target.value)}
+                        required
                       />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label htmlFor="newServiceDescription">
+                        Service Description
+                      </label>
                       <textarea
-                        value={editingServiceDescription}
+                        className="form-control"
+                        id="newServiceDescription"
+                        rows="3"
+                        value={newServiceDescription}
                         onChange={(e) =>
-                          setEditingServiceDescription(e.target.value)
+                          setNewServiceDescription(e.target.value)
                         }
-                        placeholder="Service Description"
-                        className={styles.editInput}
-                      />
-                      <div className={styles.editActions}>
-                        <button type="submit" className={styles.saveButton}>
-                          Save
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleCancelEdit}
-                          className={styles.cancelButton}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </form>
-                  ) : (
-                    <>
-                      <div className={styles.serviceDetails}>
-                        <h3>{service.service_name}</h3>
-                        <p>{service.service_description}</p>
-                      </div>
-                      <div className={styles.serviceActions}>
-                        <button
-                          onClick={() => handleEditClick(service)}
-                          className={styles.editButton}
-                        >
-                          <img
-                            src="/icons/edit-icon.png"
-                            alt="Edit"
-                            className={styles.actionIcon}
-                          />{" "}
-                          {/* Replace with actual icon path */}
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleDeleteService(service.service_id)
-                          }
-                          className={styles.deleteButton}
-                        >
-                          <img
-                            src="/icons/delete-icon.png"
-                            alt="Delete"
-                            className={styles.actionIcon}
-                          />{" "}
-                          {/* Replace with actual icon path */}
-                        </button>
-                      </div>
-                    </>
-                  )}
+                      ></textarea>
+                    </div>
+                    <button type="submit" className="btn btn-success">
+                      Add Service
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary ml-2"
+                      onClick={() => setShowAddForm(false)}
+                    >
+                      Cancel
+                    </button>
+                  </form>
                 </div>
-              ))
+              </div>
+            )}
+
+            {showEditForm && currentService.service_id && (
+              <div className="card mb-4">
+                <div className="card-header">
+                  Edit Service (ID: {currentService.service_id})
+                </div>
+                <div className="card-body">
+                  <form onSubmit={handleUpdateService}>
+                    <div className="form-group mb-3">
+                      <label htmlFor="editServiceName">Service Name</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        id="editServiceName"
+                        value={currentService.service_name}
+                        onChange={(e) =>
+                          setCurrentService({
+                            ...currentService,
+                            service_name: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="form-group mb-3">
+                      <label htmlFor="editServiceDescription">
+                        Service Description
+                      </label>
+                      <textarea
+                        className="form-control"
+                        id="editServiceDescription"
+                        rows="3"
+                        value={currentService.service_description}
+                        onChange={(e) =>
+                          setCurrentService({
+                            ...currentService,
+                            service_description: e.target.value,
+                          })
+                        }
+                      ></textarea>
+                    </div>
+                    <button type="submit" className="btn btn-success">
+                      Update Service
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary ml-2"
+                      onClick={() => setShowEditForm(false)}
+                    >
+                      Cancel
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Loading and Error messages are now conditional inside the component */}
+            {loading && (
+              <div className="text-center mt-5">
+                <p>Loading services...</p>
+              </div>
+            )}
+            {error && (
+              <div className="text-center mt-5">
+                <p className="text-danger">{error}</p>
+              </div>
+            )}
+
+            {!loading && !error && (
+              <div className="table-responsive">
+                <table className="table table-bordered table-hover">
+                  <thead className="thead-dark">
+                    <tr>
+                      <th>ID</th>
+                      <th>Name</th>
+                      <th>Description</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {services.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" className="text-center">
+                          No services found.
+                        </td>
+                      </tr>
+                    ) : (
+                      services.map((service) => (
+                        <tr key={service.service_id}>
+                          <td>{service.service_id}</td>
+                          <td>{service.service_name}</td>
+                          <td>{service.service_description || "N/A"}</td>
+                          <td>
+                            <button
+                              className="btn btn-sm btn-info mr-2"
+                              onClick={() => handleEditClick(service)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="btn btn-sm btn-danger"
+                              onClick={() =>
+                                handleDeleteService(service.service_id)
+                              }
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
-        )}
-
-        <div className={styles.addServiceSection}>
-          <h2>Add a new service</h2>
-          <form onSubmit={handleAddService} className={styles.addServiceForm}>
-            <input
-              type="text"
-              value={newServiceName}
-              onChange={(e) => setNewServiceName(e.target.value)}
-              placeholder="Service Name"
-              required
-              className={styles.addInput}
-            />
-            <textarea
-              value={newServiceDescription}
-              onChange={(e) => setNewServiceDescription(e.target.value)}
-              placeholder="Service Description (Optional)"
-              className={styles.addInput}
-            ></textarea>
-            <button type="submit" className={styles.addButton}>
-              ADD SERVICE
-            </button>
-          </form>
         </div>
       </div>
-    </AdminMenu>
+    </section>
   );
 };
 
