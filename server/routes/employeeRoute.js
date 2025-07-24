@@ -1,24 +1,42 @@
+// backend/routes/employeeRoutes.js (assuming this is your file and its path is correct)
 const express = require("express");
-const {
-  addEmployee,
-  getAllEmployees,
-} = require("../controllers/employee.controller");
+const router = express.Router();
+const employeeController = require("../controllers/employee.controller"); 
+const authMiddleware = require("../middlewares/authMiddleware"); 
+// Get all employees (admin only)
+router.get(
+  "/employees",
+  [authMiddleware.verifyToken,
+  authMiddleware.isAdmin],
+  employeeController.getAllEmployees
+); // <-- Check this line, particularly employeeController.getAllEmployees
 
-const authMiddleware = require("../middlewares/authMiddleware");
+// Get employee by ID (admin/self)
+router.get(
+  "/employees/:id",
+  [authMiddleware.verifyToken, authMiddleware.isAdmin],
+  employeeController.getEmployeeById
+); // <-- Check this line, particularly employeeController.getEmployeeById
 
-const employeeRouter = express.Router();
-
-// Protected routes
-employeeRouter.post(
+// Add a new employee (admin only)
+router.post(
   "/addEmployee",
   [authMiddleware.verifyToken, authMiddleware.isAdmin],
-  addEmployee
+  employeeController.addEmployee
 );
 
-employeeRouter.get(
-  "/employees",
+// Update an employee (admin only)
+router.put(
+  "/employees/:id",
   [authMiddleware.verifyToken, authMiddleware.isAdmin],
-  getAllEmployees
+  employeeController.updateEmployee
 );
 
-module.exports = employeeRouter;
+// Delete an employee (admin only)
+router.delete(
+  "/employees/:id",
+  [authMiddleware.verifyToken, authMiddleware.isAdmin],
+  employeeController.deleteEmployee
+);
+
+module.exports = router;

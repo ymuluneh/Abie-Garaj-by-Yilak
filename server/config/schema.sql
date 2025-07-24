@@ -144,5 +144,3 @@ ON DUPLICATE KEY UPDATE company_role_name = VALUES(company_role_name);
 
 
 
--- Run this script once before starting your backend server or integrate it in your server start script
--- node dbSetup.js
