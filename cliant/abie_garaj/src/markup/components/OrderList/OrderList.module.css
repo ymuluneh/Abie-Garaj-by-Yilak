@@ -131,3 +131,38 @@
     overflow-x: auto;
   }
 }
+
+/* Add these styles to your existing CSS */
+.searchBar {
+  margin-bottom: 20px;
+  padding: 0 10px;
+}
+
+.searchContainer {
+  position: relative;
+  max-width: 500px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+}
+
+.searchInput {
+  padding: 8px 10px 8px 35px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100%;
+  font-size: 14px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* Keep all your existing styles and just add these new ones */

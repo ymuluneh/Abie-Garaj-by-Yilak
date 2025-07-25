@@ -16,8 +16,23 @@ const CustomersPage = () => {
       setLoading(true);
       try {
         const response = await getCustomers(currentPage, limit, searchTerm);
-        setCustomers(response.data.customers);
-        setTotalPages(Math.ceil(response.data.total / limit));
+       
+
+        if (
+          response &&
+          response.data &&
+          Array.isArray(response.data.customers)
+        ) {
+          setCustomers(response.data.customers);
+          setTotalPages(Math.ceil(response.data.total / limit));
+        } else {
+          console.error(
+            "CustomersPage.jsx: Unexpected API response structure:",
+            response
+          );
+          setCustomers([]);
+          setTotalPages(1);
+        }
       } catch (error) {
         console.error("Error fetching customers:", error);
       } finally {

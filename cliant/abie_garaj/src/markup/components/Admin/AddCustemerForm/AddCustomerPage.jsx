@@ -36,43 +36,61 @@ const AddCustomerPage = () => {
     return /^\d{3}-\d{3}-\d{4}$/.test(phone);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!isValidPhone(formData.phone)) {
-      setErrorMessage("Please enter a valid phone number (555-555-5555)");
-      return;
+  setErrorMessage(""); // Clear previous errors
+  setSuccessMessage(""); // Clear previous success messages
+
+  // 1. ADDED: Frontend Email Validation (important for immediate user feedback)
+  if (!formData.email.trim()) {
+    setErrorMessage("Customer email is required.");
+    return; // Stop the submission if email is empty
+  }
+
+  if (!isValidPhone(formData.phone)) {
+    setErrorMessage("Please enter a valid phone number (555-555-5555)");
+    return; // Stop the submission if phone is invalid
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const response = await addCustomer(formData);
+
+    // 2. FIXED: Correctly check for backend success response
+    // Your backend returns { customerId, message: "Customer created successfully." }
+    // It does NOT return { success: true }.
+    // So, we check for the presence of customerId in the response data.
+    if (response.data && response.data.customerId) {
+      setSuccessMessage(
+        response.data.message || "Customer added successfully!"
+      ); // Use backend message or a default
+      setFormData({
+        // Reset the form fields on successful submission
+        email: "",
+        firstName: "",
+        lastName: "",
+        phone: "",
+      });
+    } else {
+      // This 'else' block will only trigger if the API call was technically successful (no 'catch' error)
+      // but the response data did not contain a 'customerId' as expected for success.
+      setErrorMessage(
+        response.data.message || "Failed to add customer (unexpected response)."
+      );
     }
-
-    setIsSubmitting(true);
-    setErrorMessage("");
-    setSuccessMessage("");
-
-    try {
-      const response = await addCustomer(formData);
-
-      if (response.data.success) {
-        setSuccessMessage("Customer added successfully!");
-        setFormData({
-          email: "",
-          firstName: "",
-          lastName: "",
-          phone: "",
-        });
-      } else {
-        setErrorMessage(response.data.error || "Failed to add customer");
-      }
-    } catch (error) {
-      const errorMsg =
-        error.response?.data?.error ||
-        error.response?.data?.message ||
-        "Failed to add customer. Please try again.";
-      setErrorMessage(errorMsg);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+  } catch (error) {
+    // This 'catch' block handles actual API errors (e.g., network issues, 4xx/5xx status codes from backend)
+    const errorMsg =
+      error.response?.data?.error || // Try to get specific 'error' from backend
+      error.response?.data?.message || // Try to get specific 'message' from backend
+      "Failed to add customer. Please try again."; // Fallback generic message
+    setErrorMessage(errorMsg);
+  } finally {
+    setIsSubmitting(false); // Always reset submission status
+  }
+};
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Add a new customer</h2>

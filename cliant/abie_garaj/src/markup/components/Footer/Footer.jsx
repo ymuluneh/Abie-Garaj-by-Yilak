@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from "react-router"
 
 function Footer(props) {
   return (
@@ -12,7 +13,9 @@ function Footer(props) {
                   <div className="icon">
                     <span className="flaticon-pin"></span>
                   </div>
-                  <div className="text">54B, Tailstoi Town 5238 MT, <br /> La city, IA 522364</div>
+                  <div className="text">
+                    54B, Tailstoi Town 5238 MT, <br /> La city, IA 522364
+                  </div>
                 </div>
               </div>
             </div>
@@ -22,8 +25,12 @@ function Footer(props) {
                   <div className="icon">
                     <span className="flaticon-email"></span>
                   </div>
-                  <div className="text">Email us : <br /> <a
-                    href="mailto:contact.contact@autorex.com">contact@autorex.com</a></div>
+                  <div className="text">
+                    Email us : <br />{" "}
+                    <a href="mailto:contact.contact@autorex.com">
+                      contact@autorex.com
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -33,11 +40,13 @@ function Footer(props) {
                   <div className="icon">
                     <span className="flaticon-phone"></span>
                   </div>
-                  <div className="text">Call us on : <br /><strong>+ 1800 456 7890</strong></div>
+                  <div className="text">
+                    Call us on : <br />
+                    <strong>+ 1800 456 7890</strong>
+                  </div>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>
@@ -47,8 +56,10 @@ function Footer(props) {
             <div className="row clearfix">
               <div className="footer-column col-lg-4">
                 <div className="widget widget_about">
-                  <div className="text">Capitalize on low hanging fruit to identify a ballpark value added
-                    activity to beta test. Override the digital divide additional clickthroughs.
+                  <div className="text">
+                    Capitalize on low hanging fruit to identify a ballpark value
+                    added activity to beta test. Override the digital divide
+                    additional clickthroughs.
                   </div>
                 </div>
               </div>
@@ -59,11 +70,21 @@ function Footer(props) {
                       <h4 className="widget_title">Usefull Links</h4>
                       <div className="widget-content">
                         <ul className="list">
-                          <li><a href="index.html">Home</a></li>
-                          <li><a href="about.html">About Us</a></li>
-                          <li><a href="#">Appointment</a></li>
-                          <li><a href="testimonial.html">Testimonials</a></li>
-                          <li><a href="contact.html">Contact Us</a></li>
+                          <li>
+                            <a href="index.html">Home</a>
+                          </li>
+                          <li>
+                            <a href="about.html">About Us</a>
+                          </li>
+                          <li>
+                            <a href="#">Appointment</a>
+                          </li>
+                          <li>
+                            <a href="testimonial.html">Testimonials</a>
+                          </li>
+                          <li>
+                            <a href="contact.html">Contact Us</a>
+                          </li>
                         </ul>
                       </div>
                     </div>
@@ -73,11 +94,21 @@ function Footer(props) {
                       <h4 className="widget_title">Our Services</h4>
                       <div className="widget-content">
                         <ul className="list">
-                          <li><a href="#">Performance Upgrade</a></li>
-                          <li><a href="#">Transmission Service</a></li>
-                          <li><a href="#">Break Repair & Service</a></li>
-                          <li><a href="#">Engine Service & Repair</a></li>
-                          <li><a href="#">Trye & Wheels</a></li>
+                          <li>
+                            <a href="#">Performance Upgrade</a>
+                          </li>
+                          <li>
+                            <a href="#">Transmission Service</a>
+                          </li>
+                          <li>
+                            <a href="#">Break Repair & Service</a>
+                          </li>
+                          <li>
+                            <a href="#">Engine Service & Repair</a>
+                          </li>
+                          <li>
+                            <a href="#">Trye & Wheels</a>
+                          </li>
                         </ul>
                       </div>
                     </div>
@@ -88,13 +119,28 @@ function Footer(props) {
                 <div className="widget widget_newsletter">
                   <h4 className="widget_title">Newsletter</h4>
                   <div className="text">Get latest updates and offers.</div>
-                  <div className="newsletter-form">
-                  </div>
+                  <div className="newsletter-form"></div>
                   <ul className="social-links">
-                    <li><a href="#"><span className="fab fa-facebook-f"></span></a></li>
-                    <li><a href="#"><span className="fab fa-linkedin-in"></span></a></li>
-                    <li><a href="#"><span className="fab fa-twitter"></span></a></li>
-                    <li><a href="#"><span className="fab fa-google-plus-g"></span></a></li>
+                    <li>
+                      <a href="#">
+                        <span className="fab fa-facebook-f"></span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#">
+                        <span className="fab fa-linkedin-in"></span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#">
+                        <span className="fab fa-twitter"></span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#">
+                        <span className="fab fa-google-plus-g"></span>
+                      </a>
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -104,7 +150,10 @@ function Footer(props) {
       </div>
       <div className="auto-container">
         <div className="footer-bottom">
-          <div className="copyright-text">© Copyright <a href="#">Abe Garage</a> 2023 . All right reserved.</div>
+          <div className="copyright-text">
+            © Copyright 2025 . All right reserved{" "}
+            <Link to="yilakmuluneh.com">Developed by Yilak M</Link> 
+          </div>
         </div>
       </div>
     </footer>

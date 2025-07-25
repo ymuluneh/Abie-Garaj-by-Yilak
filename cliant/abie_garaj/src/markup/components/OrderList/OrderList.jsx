@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getOrders } from "../../../services/api"; // Assuming getOrders is correctly imported
+import { getOrders } from "../../../services/api";
 import styles from "./OrderList.module.css";
-import { FaEye, FaEdit } from "react-icons/fa";
+import { FaEye, FaEdit, FaSearch } from "react-icons/fa";
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
@@ -10,22 +10,28 @@ const OrderList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [statusFilter, setStatusFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTimeout, setSearchTimeout] = useState(null);
 
   useEffect(() => {
     fetchOrders();
-  }, [currentPage, statusFilter]);
+  }, [currentPage, statusFilter, searchTerm]);
 
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const response = await getOrders(currentPage, 10, statusFilter);
-      // Ensure response.data.data is an array. If the backend returns `response.data.data` as `null` or `undefined`,
-      // set it to an empty array to prevent issues with .map()
+      const response = await getOrders(
+        currentPage,
+        10,
+        statusFilter,
+        true,
+        searchTerm
+      );
       setOrders(response.data || []);
-      setTotalPages(response.totalPages || 1); // Use response.totalPages for pagination
+      setTotalPages(response.totalPages || 1);
     } catch (error) {
       console.error("Error fetching orders:", error);
-      setOrders([]); // Set to empty array on error
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -33,7 +39,22 @@ const OrderList = () => {
 
   const handleStatusChange = (e) => {
     setStatusFilter(e.target.value);
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    setSearchTimeout(
+      setTimeout(() => {
+        setCurrentPage(1);
+      }, 500)
+    );
   };
 
   const handlePageChange = (page) => {
@@ -66,6 +87,20 @@ const OrderList = () => {
         </div>
       </div>
 
+      {/* Search bar positioned below header but above table */}
+      <div className={styles.searchBar}>
+        <div className={styles.searchContainer}>
+          <FaSearch className={styles.searchIcon} />
+          <input
+            type="text"
+            placeholder="Search orders by customer, vehicle, or ID..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className={styles.searchInput}
+          />
+        </div>
+      </div>
+
       {loading ? (
         <div className={styles.loading}>Loading orders...</div>
       ) : (
@@ -74,7 +109,7 @@ const OrderList = () => {
             <table className={styles.orderTable}>
               <thead>
                 <tr>
-                  <th>Name and/or</th>
+                  <th>Name</th>
                   <th>Order Id</th>
                   <th>Customer</th>
                   <th>Vehicle</th>
@@ -87,7 +122,6 @@ const OrderList = () => {
               <tbody>
                 {orders.length > 0 ? (
                   orders.map((order) => (
-                    // Using a React.Fragment with a key on the outer element is correct for multiple rows per item
                     <React.Fragment key={order.order_id}>
                       <tr>
                         <td rowSpan="3">
@@ -100,12 +134,8 @@ const OrderList = () => {
                         <td>
                           {order.vehicle_year} {order.vehicle_make}
                         </td>
+                        <td rowSpan="3">{order.order_date}</td>
                         <td rowSpan="3">
-                          {/* Display the date as returned by the service (already formatted) */}
-                          {order.order_date}
-                        </td>
-                        <td rowSpan="3">
-                          {/* Display actual employee name if available, otherwise fallback */}
                           {order.employee_first_name && order.employee_last_name
                             ? `${order.employee_first_name} ${order.employee_last_name}`
                             : "Admin Belede"}
@@ -117,7 +147,6 @@ const OrderList = () => {
                               backgroundColor: statusColors[order.order_status],
                             }}
                           >
-                            {/* Capitalize first letter and replace underscores for display */}
                             {order.order_status
                               .replace(/_/g, " ")
                               .split(" ")
@@ -156,7 +185,9 @@ const OrderList = () => {
                 ) : (
                   <tr>
                     <td colSpan="8" className={styles.noOrders}>
-                      No orders found
+                      {searchTerm || statusFilter
+                        ? "No orders match your search criteria"
+                        : "No orders found"}
                     </td>
                   </tr>
                 )}

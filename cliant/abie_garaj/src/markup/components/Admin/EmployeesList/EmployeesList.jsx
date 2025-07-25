@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Import Link and useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import employeeService from "../../../../services/employee.service";
-import { useAuth } from "../../../../contexts/AuthContext"; 
-
-// Import icons
-import { FaEdit, FaTrashAlt } from "react-icons/fa"; 
-import styles from "./EmployeesList.module.css"; // Import the CSS module
+import { useAuth } from "../../../../contexts/AuthContext";
+import { FaEdit, FaTrashAlt, FaSearch } from "react-icons/fa";
+import styles from "./EmployeesList.module.css";
 
 const EmployeesList = () => {
   const [employees, setEmployees] = useState([]);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [filteredEmployees, setFilteredEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState(false);
   const [apiErrorMessage, setApiErrorMessage] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [employeesPerPage] = useState(10);
   const { employee } = useAuth();
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
   let token = employee?.employee_token || null;
 
   useEffect(() => {
     const fetchEmployees = async () => {
-      setLoading(true); // Set loading to true when fetching starts
-      setApiError(false); // Clear previous errors
+      setLoading(true);
+      setApiError(false);
       setApiErrorMessage(null);
       try {
         const res = await employeeService.getAllEmployees(token);
@@ -38,7 +40,8 @@ const EmployeesList = () => {
               break;
             case 404:
               setApiErrorMessage("No employees found.");
-              setEmployees([]); // Ensure employees array is empty
+              setEmployees([]);
+              setFilteredEmployees([]);
               break;
             default:
               setApiErrorMessage(
@@ -49,12 +52,13 @@ const EmployeesList = () => {
         }
 
         const data = await res.json();
-        // Check if data.data exists and is an array
         if (data.data && Array.isArray(data.data) && data.data.length > 0) {
           setEmployees(data.data);
+          setFilteredEmployees(data.data);
         } else {
-          setEmployees([]); // No employees or empty array
-          setApiErrorMessage("No employees found."); // Display a message for empty list
+          setEmployees([]);
+          setFilteredEmployees([]);
+          setApiErrorMessage("No employees found.");
         }
       } catch (err) {
         console.error("Error fetching employees:", err);
@@ -63,12 +67,35 @@ const EmployeesList = () => {
           "Network or server error. Could not retrieve employees."
         );
       } finally {
-        setLoading(false); // Set loading to false when fetching ends
+        setLoading(false);
       }
     };
 
     fetchEmployees();
-  }, [token]); // Depend on token, so it refetches if token changes
+  }, [token]);
+
+  useEffect(() => {
+    if (searchTerm === "") {
+      setFilteredEmployees(employees);
+      setCurrentPage(1);
+      return;
+    }
+
+    const results = employees.filter((emp) => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        emp.employee_first_name.toLowerCase().includes(searchLower) ||
+        emp.employee_last_name.toLowerCase().includes(searchLower) ||
+        emp.employee_email.toLowerCase().includes(searchLower) ||
+        (emp.employee_phone && emp.employee_phone.includes(searchTerm)) ||
+        (emp.company_role_name &&
+          emp.company_role_name.toLowerCase().includes(searchLower))
+      );
+    });
+
+    setFilteredEmployees(results);
+    setCurrentPage(1);
+  }, [searchTerm, employees]);
 
   const handleDelete = async (employeeId) => {
     if (
@@ -77,7 +104,7 @@ const EmployeesList = () => {
       )
     ) {
       try {
-        setLoading(true); // Show loading feedback
+        setLoading(true);
         const response = await employeeService.deleteEmployee(
           employeeId,
           token
@@ -86,15 +113,15 @@ const EmployeesList = () => {
           const errorData = await response.json();
           throw new Error(errorData.message || "Failed to delete employee.");
         }
-        // If deletion is successful, refetch the list to update the UI
         alert("Employee deleted successfully!");
-        // Re-fetch employees to update the list
         const res = await employeeService.getAllEmployees(token);
         const data = await res.json();
-        if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+        if (data.data && Array.isArray(data.data)) {
           setEmployees(data.data);
+          setFilteredEmployees(data.data);
         } else {
           setEmployees([]);
+          setFilteredEmployees([]);
           setApiErrorMessage("No employees found.");
         }
       } catch (error) {
@@ -108,73 +135,130 @@ const EmployeesList = () => {
     }
   };
 
+  // Pagination logic
+  const indexOfLastEmployee = currentPage * employeesPerPage;
+  const indexOfFirstEmployee = indexOfLastEmployee - employeesPerPage;
+  const currentEmployees = filteredEmployees.slice(
+    indexOfFirstEmployee,
+    indexOfLastEmployee
+  );
+  const totalPages = Math.ceil(filteredEmployees.length / employeesPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <div className={styles.container}>
-      <div className={styles.titleContainer}>
+      <div className={styles.header}>
         <h2>Employees</h2>
+        <div className={styles.searchContainer}>
+          <FaSearch className={styles.searchIcon} />
+          <input
+            type="text"
+            placeholder="Search employees..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={styles.searchInput}
+          />
+        </div>
       </div>
 
       {loading && <div className={styles.loading}>Loading employees...</div>}
 
       {apiError && <div className={styles.apiError}>{apiErrorMessage}</div>}
 
-      {!loading && !apiError && employees.length === 0 && (
-        <div className={styles.noEmployees}>No employees found.</div>
+      {!loading && !apiError && filteredEmployees.length === 0 && (
+        <div className={styles.noEmployees}>
+          {searchTerm
+            ? "No employees match your search criteria"
+            : "No employees found"}
+        </div>
       )}
 
-      {!loading && !apiError && employees.length > 0 && (
-        
-        <table className={styles.employeeTable}> 
-          <thead>
-            <tr>
-              <th className={styles.activeCol}>Active</th>
-              <th className={styles.nameCol}>First Name</th>
-              <th className={styles.nameCol}>Last Name</th>
-              <th className={styles.emailCol}>Email</th>
-              <th className={styles.phoneCol}>Phone</th>
-              <th className={styles.dateCol}>Added Date</th>
-              <th className={styles.roleCol}>Role</th>
-              <th className={styles.actionsCol}>Edit/Delete</th>
-            </tr>
-          </thead>
-          <tbody>
-            {employees.map((employee) => (
-              <tr key={employee.employee_id}>
-                <td>{employee.employee_active_status === 1 ? "Yes" : "No"}</td>
-                <td>{employee.employee_first_name}</td>
-                <td>{employee.employee_last_name}</td>
-                <td>{employee.employee_email}</td>
-                <td>{employee.employee_phone}</td>
-                <td>
-                  {employee.employee_added_date
-                    ? format(
-                        new Date(employee.employee_added_date),
-                        "MM - dd - yyyy | HH:mm"
-                      )
-                    : "N/A"}
-                </td>
-                <td>{employee.company_role_name}</td>
-                <td>
-                  <div className={styles.actions}>
-                    <Link
-                      to={`/admin/employees/edit/${employee.employee_id}`}
-                      title="Edit Employee"
-                    >
-                      <FaEdit
-                        className={`${styles.actionIcon} ${styles.editIcon}`}
-                      />
-                    </Link>
-                    <FaTrashAlt
-                      className={`${styles.actionIcon} ${styles.deleteIcon}`}
-                      onClick={() => handleDelete(employee.employee_id)}
-                      title="Delete Employee"
-                    />
-                  </div>
-                </td>
+      {!loading && !apiError && filteredEmployees.length > 0 && (
+        <>
+          <table className={styles.employeeTable}>
+            <thead>
+              <tr>
+                <th className={styles.activeCol}>Active</th>
+                <th className={styles.nameCol}>First Name</th>
+                <th className={styles.nameCol}>Last Name</th>
+                <th className={styles.emailCol}>Email</th>
+                <th className={styles.phoneCol}>Phone</th>
+                <th className={styles.dateCol}>Added Date</th>
+                <th className={styles.roleCol}>Role</th>
+                <th className={styles.actionsCol}>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table> 
+            </thead>
+            <tbody>
+              {currentEmployees.map((employee) => (
+                <tr key={employee.employee_id}>
+                  <td>
+                    {employee.employee_active_status === 1 ? "Yes" : "No"}
+                  </td>
+                  <td>{employee.employee_first_name}</td>
+                  <td>{employee.employee_last_name}</td>
+                  <td>{employee.employee_email}</td>
+                  <td>{employee.employee_phone}</td>
+                  <td>
+                    {employee.employee_added_date
+                      ? format(
+                          new Date(employee.employee_added_date),
+                          "MM - dd - yyyy | HH:mm"
+                        )
+                      : "N/A"}
+                  </td>
+                  <td>{employee.company_role_name}</td>
+                  <td>
+                    <div className={styles.actions}>
+                      <Link
+                        to={`/admin/employees/edit/${employee.employee_id}`}
+                        title="Edit Employee"
+                      >
+                        <FaEdit
+                          className={`${styles.actionIcon} ${styles.editIcon}`}
+                        />
+                      </Link>
+                      <FaTrashAlt
+                        className={`${styles.actionIcon} ${styles.deleteIcon}`}
+                        onClick={() => handleDelete(employee.employee_id)}
+                        title="Delete Employee"
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {totalPages > 1 && (
+            <div className={styles.pagination}>
+              <button onClick={() => paginate(1)} disabled={currentPage === 1}>
+                First
+              </button>
+              <button
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+              <button
+                onClick={() => paginate(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                Last
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

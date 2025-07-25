@@ -1,159 +1,243 @@
-/* Overall container for the edit page */
+/* src/markup/components/OrderEdit/OrderEdit.module.css */
+
 .container {
   max-width: 800px;
-  margin: 30px auto;
+  margin: 40px auto;
   padding: 30px;
-  background-color: #ffffff;
+  background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: #333;
 }
 
-/* Page title */
 .container h1 {
-  font-size: 2.2em;
-  color: #2c3e50;
-  margin-bottom: 25px;
   text-align: center;
-  border-bottom: 2px solid #e0e0e0;
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: 600;
+  border-bottom: 2px solid #eee;
   padding-bottom: 15px;
 }
 
-/* Loading and error messages */
 .loading, .error, .notFound {
   text-align: center;
-  padding: 20px;
-  font-size: 1.1em;
+  font-size: 18px;
+  padding: 50px;
   color: #555;
 }
 
 .error {
-  color: #c0392b; /* Red for errors */
-  background-color: #fcebeb;
-  border: 1px solid #c0392b;
-  border-radius: 5px;
-  margin-bottom: 20px;
+  color: #dc3545;
 }
 
-/* Form styling */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px; /* Space between form groups */
+  gap: 20px;
 }
 
 .formGroup {
-  display: flex;
-  flex-direction: column;
+  margin-bottom: 15px;
 }
 
 .formGroup label {
+  display: block;
   font-weight: bold;
   margin-bottom: 8px;
   color: #555;
-  font-size: 0.95em;
+  font-size: 15px;
 }
 
-/* Input and select fields */
 .formGroup input[type="text"],
-.formGroup textarea,
-.formGroup .select {
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1em;
-  color: #444;
+.formGroup select,
+.formGroup textarea {
   width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
   box-sizing: border-box; /* Include padding in width */
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  background-color: #f9f9f9;
+  transition: border-color 0.2s;
+  background-color: #fcfcfc;
 }
 
-.formGroup input[type="text"]:focus,
-.formGroup textarea:focus,
-.formGroup .select:focus {
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-  outline: none;
-  background-color: #ffffff;
-}
-
-.formGroup input[type="text"][readOnly] {
-  background-color: #e9e9e9;
+/* Added style for read-only inputs */
+.readOnlyInput {
+  background-color: #eee;
   cursor: not-allowed;
-  color: #777;
+  color: #666;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
 }
 
 .formGroup textarea {
-  resize: vertical; /* Allow vertical resizing */
-  min-height: 80px;
+  resize: vertical;
+  min-height: 100px;
 }
 
-/* Buttons */
+.section {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 6px;
+  margin-top: 15px;
+  border: 1px solid #e7e7e7;
+}
+
+.section h2 {
+  font-size: 18px;
+  color: #0056b3;
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e0e0e0;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 700;
+}
+
+.servicesList {
+  margin-top: 15px;
+  border: 1px dashed #ddd;
+  padding: 15px;
+  border-radius: 5px;
+}
+
+.serviceItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.serviceItem:last-child {
+  border-bottom: none;
+}
+
+.serviceDetails {
+  flex-grow: 1; /* Allows service details to take up available space */
+  margin-right: 15px; /* Spacing between details and checkbox */
+}
+
+.serviceItem h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+.serviceItem p {
+  margin: 5px 0 0 0;
+  font-size: 14px;
+  color: #777;
+}
+
+.serviceCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #555;
+  margin-right: 20px; /* Space between checkbox and status tag */
+  white-space: nowrap;
+}
+
+.serviceCheckbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #007bff;
+}
+
+.statusTag {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.completedTag {
+  background-color: #28a745;
+  color: white;
+}
+
+.pendingTag {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
 .saveButton, .cancelButton {
   padding: 12px 25px;
   border: none;
-  border-radius: 6px;
-  font-size: 1.05em;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  width: auto; /* Buttons adjust to content */
-  align-self: flex-start; /* Align to the left */
 }
 
 .saveButton {
-  background-color: #28a745; /* Green for save */
-  color: #ffffff;
-  margin-right: 15px; /* Space between buttons */
+  background-color: #28a745;
+  color: white;
 }
 
 .saveButton:hover {
   background-color: #218838;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .saveButton:disabled {
-  background-color: #95d3a7;
+  background-color: #90ee90;
   cursor: not-allowed;
 }
 
 .cancelButton {
-  background-color: #6c757d; /* Grey for cancel */
-  color: #ffffff;
+  background-color: #6c757d;
+  color: white;
 }
 
 .cancelButton:hover {
   background-color: #5a6268;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
-/* Button group for alignment */
-.buttonGroup {
-  display: flex;
-  justify-content: flex-start; /* Align buttons to the start */
-  margin-top: 20px;
+.cancelButton:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .container {
-    margin: 20px;
+    margin: 20px auto;
     padding: 20px;
   }
-
-  .container h1 {
-    font-size: 1.8em;
-    margin-bottom: 20px;
+  .actions {
+    flex-direction: column;
+    gap: 10px;
   }
-
   .saveButton, .cancelButton {
-    width: 100%; /* Full width buttons on small screens */
-    margin-right: 0;
-    margin-bottom: 10px; /* Space between vertical buttons */
-  }
-
-  .buttonGroup {
-    flex-direction: column; /* Stack buttons vertically */
+    width: 100%;
   }
 }

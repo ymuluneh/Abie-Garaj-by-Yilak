@@ -1,5 +1,4 @@
-// src/services/employee.service.js
-// Import from the env
+
 const api_url = import.meta.env.VITE_API_URL;
 
 // A function to send POST request to create a new employee
@@ -18,7 +17,7 @@ const createEmployee = async (formData, loggedInEmployeeToken) => {
 
 // A function to send get request to get all employees
 const getAllEmployees = async (token) => {
-  const response = await fetch(`${api_url}/api/employees/employees`, {
+  const response = await fetch(`${api_url}/api/employees`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -30,7 +29,7 @@ const getAllEmployees = async (token) => {
 
 // A function to get an employee by ID
 const getEmployeeById = async (id, token) => {
-  const response = await fetch(`${api_url}/api/employees/employees/${id}`, {
+  const response = await fetch(`${api_url}/api/employees/${id}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -42,7 +41,7 @@ const getEmployeeById = async (id, token) => {
 
 // A function to update an employee
 const updateEmployee = async (id, employeeData, token) => {
-  const response = await fetch(`${api_url}/api/employees/employees/${id}`, {
+  const response = await fetch(`${api_url}/api/employees/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -55,7 +54,7 @@ const updateEmployee = async (id, employeeData, token) => {
 
 // A function to delete an employee
 const deleteEmployee = async (id, token) => {
-  const response = await fetch(`${api_url}/api/employees/employees/${id}`, {
+  const response = await fetch(`${api_url}/api/employees/${id}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",

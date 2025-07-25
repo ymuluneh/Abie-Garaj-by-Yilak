@@ -61,37 +61,31 @@ const EditCustomerPage = () => {
     setFormData((prev) => ({ ...prev, activeStatus: e.target.checked }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
+ const handleSubmit = async (e) => {
+   e.preventDefault();
+   setError("");
+   setSuccess("");
 
-    try {
-      // Transform formData to match backend's expected structure
-      const dataToSend = {
-        customer_email: formData.email,
-        customer_first_name: formData.firstName,
-        customer_last_name: formData.lastName,
-        customer_phone_number: formData.phone,
-        customer_active_status: formData.activeStatus ? 1 : 0, // Convert boolean to 1 or 0
-      };
+   try {
+     const dataToSend = {
+       phone: formData.phone,
+       firstName: formData.firstName,
+       lastName: formData.lastName,
+       activeStatus: formData.activeStatus,
+     };
 
-      // Call updateCustomer with the transformed data
-      const response = await updateCustomer(id, dataToSend);
+     await updateCustomer(id, dataToSend);
 
-      if (response.status !== 200) {
-        // Check status for non-OK responses
-        throw new Error(response.data?.message || "Failed to update customer.");
-      }
-
-      setSuccess("Customer updated successfully!");
-      setTimeout(() => navigate(`/admin/customer/${id}`), 1500); // Navigate back to detail page
-    } catch (err) {
-      // Changed error to err to avoid conflict with error state
-      console.error("Error updating customer:", err); // Log the full error for debugging
-      setError(err.message || "Failed to update customer. Please try again."); // Get message from error object
-    }
-  };
+     setSuccess("Customer updated successfully!");
+     setTimeout(() => navigate(`/admin/customer/${id}`), 1500);
+   } catch (err) {
+     console.error("Error updating customer:", err);
+     setError(
+       err.response?.data?.message ||
+         "Failed to update customer. Please try again."
+     );
+   }
+ };
 
   // Conditional rendering for loading, error, and not found states
   if (loading) {
