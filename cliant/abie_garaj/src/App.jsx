@@ -27,13 +27,13 @@ import CustomersPage from "./markup/pages/admin/CustomerList";
 import CostomerProfil from "./markup/pages/admin/CostomerProfil";
 import EditCustomer from "./markup/pages/admin/EditCustomer";
 import Vehicle from "./markup/pages/admin/Vehicle";
-import OrderList from "./markup/components/OrderList/OrderList";
-import CreateOrder from "./markup/components/OrderList/CreateOrder";
+import OrderList from "./markup/pages/admin/orders/OrderList";
 import OrderDetail from "./markup/components/OrderList/OrderDetail";
-import ServiceManagement from "./markup/pages/admin/ServiceManagement/ServiceManagement";
 import OrderEdit from "./markup/components/OrderList/OrderEdit";
-import EmployeeEdit from "./markup/components/Admin/EmployeesList/EmployeeEdit";
 import AdminDashboard from "./markup/pages/admin/AdminDashbord/AdminDashboard";
+import CreatOrder from "./markup/pages/admin/orders/CreatOrder";
+import EditEmployee from "./markup/pages/admin/EditEmployee";
+import Services from "./markup/pages/admin/ServiceManagement/services";
 
 function App() {
   return (
@@ -62,12 +62,12 @@ function App() {
           }
         />
 
-        <Route path="/admin" element={<AdminDashboard />}/>
-        <Route path="/admin/employees/edit/:id" element={<EmployeeEdit/>}/>
-        <Route path="/admin/services" element={<ServiceManagement />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/employees/edit/:id" element={<EditEmployee />} />
+        <Route path="/admin/services" element={<Services />} />
         <Route path="/admin/orders" element={<OrderList />} />
         <Route path="/admin/orders/:id/edit" element={<OrderEdit />} />
-        <Route path="/admin/order" element={<CreateOrder />} />
+        <Route path="/admin/order" element={<CreatOrder />} />
         <Route path="/admin/orders/:id" element={<OrderDetail />} />
         <Route path="/add-vehicle" element={<Vehicle />} />
         <Route path="/admin/customers" element={<CustomersPage />} />
