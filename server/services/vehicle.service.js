@@ -42,6 +42,26 @@ exports.addVehicle = async (vehicleData) => {
       "Missing required vehicle fields (customer_id, vehicle_make, vehicle_model)"
     );
   }
+  if (vehicleData.vehicle_serial_number) {
+    const [existingSerial] = await pool.query(
+      "SELECT vehicle_id FROM customer_vehicle_info WHERE vehicle_serial_number = ?",
+      [vehicleData.vehicle_serial_number]
+    );
+    if (existingSerial.length > 0) {
+      throw new Error("A vehicle with this serial number already exists");
+    }
+  }
+
+  // Check for duplicate license tag
+  if (vehicleData.vehicle_tag) {
+    const [existingTag] = await pool.query(
+      "SELECT vehicle_id FROM customer_vehicle_info WHERE vehicle_tag = ?",
+      [vehicleData.vehicle_tag]
+    );
+    if (existingTag.length > 0) {
+      throw new Error("A vehicle with this license plate already exists");
+    }
+  }
 
   try {
     const [result] = await pool.query(
@@ -125,5 +145,19 @@ exports.getVehiclesByCustomerId = async (customerId) => {
     throw new Error(
       `Database error fetching vehicles for customer: ${error.message}`
     );
+  }
+};
+
+/**
+ * Retrieves all vehicles from the database.
+ * @returns {Promise<Array<Object>>} An array of all vehicle objects.
+ */
+exports.getAllVehicles = async () => {
+  // NEW FUNCTION
+  try {
+    const [rows] = await pool.query("SELECT * FROM customer_vehicle_info");
+    return rows;
+  } catch (error) {
+    throw new Error(`Database error fetching all vehicles: ${error.message}`);
   }
 };

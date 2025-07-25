@@ -1,28 +1,36 @@
 const { pool } = require("../config/config");
 
 exports.createCustomer = async (customerData) => {
-  const { email, phone, firstName, lastName, hash, activeStatus, addedDate } =
-    customerData;
+  // Extract fields with either naming convention
+  const email = customerData.email || customerData.customer_email;
+  const phone = customerData.phone || customerData.customer_phone_number;
+  const firstName = customerData.firstName || customerData.customer_first_name;
+  const lastName = customerData.lastName || customerData.customer_last_name;
+
+  // Set defaults for optional fields
+  const hash = customerData.hash || "";
+  const activeStatus =
+    customerData.activeStatus !== undefined ? customerData.activeStatus : 1;
+  const addedDate = customerData.addedDate || new Date();
+
   const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
 
-    // Insert into customer_identifier
     const [identifierResult] = await connection.query(
-      `INSERT INTO customer_identifier 
-            (customer_email, customer_phone_number, customer_hash, customer_added_date) 
-            VALUES (?, ?, ?, ?)`,
+      `INSERT INTO customer_identifier
+       (customer_email, customer_phone_number, customer_hash, customer_added_date)
+       VALUES (?, ?, ?, ?)`,
       [email, phone, hash, addedDate]
     );
 
     const customerId = identifierResult.insertId;
 
-    // Insert into customer_info
     await connection.query(
-      `INSERT INTO customer_info 
-            (customer_id, customer_first_name, customer_last_name, customer_active_status) 
-            VALUES (?, ?, ?, ?)`,
+      `INSERT INTO customer_info
+       (customer_id, customer_first_name, customer_last_name, customer_active_status)
+       VALUES (?, ?, ?, ?)`,
       [customerId, firstName, lastName, activeStatus]
     );
 
@@ -40,17 +48,17 @@ exports.getCustomers = async (page, limit, sortby, search) => {
   const offset = (page - 1) * limit;
   try {
     let query = `
-            SELECT 
-                ci.customer_id,
-                ci.customer_email,
-                ci.customer_phone_number,
-                cinfo.customer_first_name,
-                cinfo.customer_last_name,
-                ci.customer_added_date,
-                cinfo.customer_active_status
-            FROM customer_identifier ci
-            JOIN customer_info cinfo ON ci.customer_id = cinfo.customer_id
-        `;
+             SELECT
+               ci.customer_id,
+               ci.customer_email,
+               ci.customer_phone_number,
+               cinfo.customer_first_name,
+               cinfo.customer_last_name,
+               ci.customer_added_date,
+               cinfo.customer_active_status
+             FROM customer_identifier ci
+             JOIN customer_info cinfo ON ci.customer_id = cinfo.customer_id
+         `;
 
     let countQuery =
       "SELECT COUNT(*) AS total FROM customer_identifier ci JOIN customer_info cinfo ON ci.customer_id = cinfo.customer_id";
@@ -65,7 +73,6 @@ exports.getCustomers = async (page, limit, sortby, search) => {
       countParams = [searchTerm, searchTerm, searchTerm, searchTerm];
     }
 
-    // Add sorting
     const validSortColumns = [
       "customer_id",
       "customer_first_name",
@@ -85,6 +92,8 @@ exports.getCustomers = async (page, limit, sortby, search) => {
     const [rows] = await pool.query(query, params);
     const [count] = await pool.query(countQuery, countParams);
 
+   
+
     return {
       total: count[0].total,
       customers: rows,
@@ -98,19 +107,19 @@ exports.getCustomerById = async (id) => {
   try {
     const [rows] = await pool.query(
       `
-            SELECT 
-                ci.customer_id,
-                ci.customer_email,
-                ci.customer_phone_number,
-                ci.customer_hash,
-                ci.customer_added_date,
-                cinfo.customer_first_name,
-                cinfo.customer_last_name,
-                cinfo.customer_active_status
-            FROM customer_identifier ci
-            JOIN customer_info cinfo ON ci.customer_id = cinfo.customer_id
-            WHERE ci.customer_id = ?
-        `,
+             SELECT
+               ci.customer_id,
+               ci.customer_email,
+               ci.customer_phone_number,
+               ci.customer_hash,
+               ci.customer_added_date,
+               cinfo.customer_first_name,
+               cinfo.customer_last_name,
+               cinfo.customer_active_status
+             FROM customer_identifier ci
+             JOIN customer_info cinfo ON ci.customer_id = cinfo.customer_id
+             WHERE ci.customer_id = ?
+         `,
       [id]
     );
 
@@ -131,19 +140,23 @@ exports.updateCustomer = async (id, data) => {
   try {
     await connection.beginTransaction();
 
-    // Update customer_identifier table
-    await connection.query(
-      `UPDATE customer_identifier 
-             SET customer_phone_number = ?
-             WHERE customer_id = ?`,
-      [phone, id]
-    );
+    // Update phone in customer_identifier if provided
+    if (phone !== undefined) {
+      await connection.query(
+        `UPDATE customer_identifier 
+         SET customer_phone_number = ? 
+         WHERE customer_id = ?`,
+        [phone, id]
+      );
+    }
 
-    // Update customer_info table
+    // Update other fields in customer_info
     await connection.query(
       `UPDATE customer_info 
-             SET customer_first_name = ?, customer_last_name = ?, customer_active_status = ?
-             WHERE customer_id = ?`,
+       SET customer_first_name = ?,
+           customer_last_name = ?,
+           customer_active_status = ?
+       WHERE customer_id = ?`,
       [firstName, lastName, activeStatus, id]
     );
 
@@ -151,7 +164,7 @@ exports.updateCustomer = async (id, data) => {
     return true;
   } catch (error) {
     await connection.rollback();
-    throw new Error(`Error updating customer: ${error.message}`);
+    throw error;
   } finally {
     connection.release();
   }

@@ -1,26 +1,25 @@
+// order.service.js
 const { pool } = require("../config/config");
+const emailService = require("../utils/emailService"); // Ensure this path is correct
 
 class OrderService {
   /**
-   * Fetches all orders with pagination and optional status filtering.
-   * @param {number} page - The current page number.
-   * @param {number} limit - The number of orders per page.
-   * @param {string} status - Optional filter for order status.
-   * @returns {object} An object containing the orders, total count, and total pages.
+   * Fetches all orders with pagination, optional status filtering,
+   * and their associated services if `includeServices` is true.
    */
-  async getAllOrders(page, limit, status) {
+  async getAllOrders(page, limit, status, includeServices = false) {
     let connection;
     try {
       connection = await pool.getConnection();
 
-      let query = `
+      let baseQuery = `
         SELECT
           o.order_id,
           o.customer_id,
           o.employee_id,
           o.vehicle_id,
           o.order_date,
-          o.order_status,
+          o.order_status, -- Include overall order_status
           ci.customer_first_name,
           ci.customer_last_name,
           c.customer_email,
@@ -58,42 +57,81 @@ class OrderService {
       const countParams = [];
 
       if (status) {
-        query += ` WHERE o.order_status = ?`;
+        baseQuery += ` WHERE o.order_status = ?`;
         countQuery += ` WHERE o.order_status = ?`;
         params.push(status);
         countParams.push(status);
       }
 
-      // Add pagination
       const offset = (page - 1) * limit;
-      query += ` ORDER BY o.order_date DESC LIMIT ? OFFSET ?`; // Order by date to ensure consistent pagination
+      baseQuery += ` ORDER BY o.order_date DESC LIMIT ? OFFSET ?`;
       params.push(limit, offset);
 
-      const [orderRows] = await connection.query(query, params);
+      const [orderRows] = await connection.query(baseQuery, params);
       const [countRows] = await connection.query(countQuery, countParams);
 
       const total = countRows[0].total;
       const totalPages = Math.ceil(total / limit);
 
       const orders = orderRows.map((order) => {
-        // Format dates if they exist
+        // Date formatting should ideally be done on the frontend for display
+        // but keeping it here for consistency with existing code.
         if (order.order_date) {
-          order.order_date = new Date(order.order_date).toLocaleDateString(
-            "en-US"
-          ); // Or toISOString() if frontend prefers ISO
+          order.order_date = new Date(order.order_date).toISOString(); // Send ISO string to frontend
         }
         if (order.order_estimated_completion_date) {
           order.order_estimated_completion_date = new Date(
             order.order_estimated_completion_date
-          ).toLocaleDateString("en-US");
+          ).toISOString(); // Send ISO string
         }
         if (order.order_completion_date) {
           order.order_completion_date = new Date(
             order.order_completion_date
-          ).toLocaleDateString("en-US");
+          ).toISOString(); // Send ISO string
         }
         return order;
       });
+
+      if (includeServices && orders.length > 0) {
+        const orderIds = orders.map((o) => o.order_id);
+        const [orderServicesRows] = await connection.query(
+          `
+          SELECT
+            os.order_id,
+            os.service_id,
+            cs.service_name,
+            cs.service_description,
+            cs.service_price,
+            os.service_completed
+          FROM order_services os
+          JOIN common_services cs ON os.service_id = cs.service_id
+          WHERE os.order_id IN (?)
+          `,
+          [orderIds]
+        );
+
+        const servicesMap = new Map();
+        orderServicesRows.forEach((row) => {
+          if (!servicesMap.has(row.order_id)) {
+            servicesMap.set(row.order_id, []);
+          }
+          servicesMap.get(row.order_id).push({
+            service_id: row.service_id,
+            service_name: row.service_name,
+            service_description: row.service_description,
+            service_price: parseFloat(row.service_price),
+            service_completed: Boolean(row.service_completed),
+            // Add service_status here for consistency with frontend
+            service_status: Boolean(row.service_completed)
+              ? "completed"
+              : "pending",
+          });
+        });
+
+        orders.forEach((order) => {
+          order.services = servicesMap.get(order.order_id) || [];
+        });
+      }
 
       return { orders, total, totalPages };
     } catch (error) {
@@ -104,11 +142,6 @@ class OrderService {
     }
   }
 
-  /**
-   * Fetches a single order by its ID, including related customer, vehicle, and service information.
-   * @param {number} orderId - The ID of the order to fetch.
-   * @returns {object|null} The order object if found, otherwise null.
-   */
   async getOrderById(orderId) {
     let connection;
     try {
@@ -122,7 +155,7 @@ class OrderService {
           o.employee_id,
           o.vehicle_id,
           o.order_date,
-          o.order_status,
+          o.order_status, -- Ensure overall order_status is fetched
           ci.customer_first_name,
           ci.customer_last_name,
           c.customer_email,
@@ -145,14 +178,13 @@ class OrderService {
         LEFT JOIN order_info oi ON o.order_id = oi.order_id
         LEFT JOIN employee_info ei ON o.employee_id = ei.employee_id
         WHERE o.order_id = ?
-      `,
+        `,
         [orderId]
       );
 
       if (orderRows.length === 0) return null;
       const order = orderRows[0];
 
-      // Get services for the order
       const [serviceRows] = await connection.query(
         `
         SELECT
@@ -160,32 +192,36 @@ class OrderService {
           os.service_id,
           cs.service_name,
           cs.service_description,
+          cs.service_price,
           os.service_completed
         FROM order_services os
         JOIN common_services cs ON os.service_id = cs.service_id
         WHERE os.order_id = ?
-      `,
+        `,
         [orderId]
       );
 
       order.services = serviceRows.map((service) => ({
         ...service,
+        service_price: parseFloat(service.service_price),
         service_completed: Boolean(service.service_completed),
+        // Add service_status here for consistency with frontend
+        service_status: Boolean(service.service_completed)
+          ? "completed"
+          : "pending",
       }));
 
-      // Ensure that date fields are correctly formatted
+      // Convert dates to ISO string for consistent frontend handling
       if (order.order_date)
-        order.order_date = new Date(order.order_date).toLocaleDateString(
-          "en-US"
-        );
+        order.order_date = new Date(order.order_date).toISOString();
       if (order.order_estimated_completion_date)
         order.order_estimated_completion_date = new Date(
           order.order_estimated_completion_date
-        ).toLocaleDateString("en-US");
+        ).toISOString();
       if (order.order_completion_date)
         order.order_completion_date = new Date(
           order.order_completion_date
-        ).toLocaleDateString("en-US");
+        ).toISOString();
 
       return order;
     } catch (error) {
@@ -201,8 +237,6 @@ class OrderService {
 
   /**
    * Creates a new order along with its associated order info and services.
-   * @param {object} orderData - The data for the new order.
-   * @returns {number} The ID of the newly created order.
    */
   async createOrder(orderData) {
     const {
@@ -217,27 +251,25 @@ class OrderService {
     try {
       await connection.beginTransaction();
 
-      // 1. Insert into orders table
       const [orderResult] = await connection.query(
-        `INSERT INTO orders (customer_id, employee_id, vehicle_id) VALUES (?, ?, ?)`,
-        [customer_id, employee_id, vehicle_id]
+        `INSERT INTO orders (customer_id, employee_id, vehicle_id, order_status) VALUES (?, ?, ?, ?)`,
+        [customer_id, employee_id, vehicle_id, "pending"] // New orders start as pending
       );
       const orderId = orderResult.insertId;
 
-      // 2. Insert into order_info
       await connection.query(
         `INSERT INTO order_info (order_id, order_additional_requests) VALUES (?, ?)`,
         [orderId, additional_requests || ""]
       );
 
-      // 3. Insert services
       if (services && Array.isArray(services) && services.length > 0) {
         const serviceValues = services.map((service) => [
           orderId,
           service.service_id,
+          0, // New services start as not completed (0)
         ]);
         await connection.query(
-          `INSERT INTO order_services (order_id, service_id) VALUES ?`,
+          `INSERT INTO order_services (order_id, service_id, service_completed) VALUES ?`,
           [serviceValues]
         );
       }
@@ -255,64 +287,66 @@ class OrderService {
 
   /**
    * Updates an existing order's status, additional requests, and associated services.
-   * @param {number} orderId - The ID of the order to update.
-   * @param {object} orderData - The data to update. Can include `status`, `additional_requests`, `services`.
-   * @returns {boolean} True if the order was updated, false otherwise.
+   * This method now derives the overall order_status based on individual service completion.
    */
   async updateOrder(orderId, orderData) {
-    const { services, additional_requests, status } = orderData;
-    const connection = await pool.getConnection();
-
+    const {
+      services,
+      order_additional_requests,
+      order_status: incomingOverallStatus,
+    } = orderData;
+    let connection;
     try {
+      connection = await pool.getConnection();
       await connection.beginTransaction();
-      let updatedCount = 0;
 
-      // Update order status if provided
-      if (status) {
-        const [result] = await connection.query(
-          `UPDATE orders SET order_status = ? WHERE order_id = ?`,
-          [status, orderId]
-        );
-        updatedCount += result.affectedRows;
+      let updatedCount = 0;
+      let oldOrderStatus = null; // To check for status transition for email notification
+
+      // 1. Get current overall order status before any updates
+      const [currentOrderRows] = await connection.query(
+        `SELECT order_status FROM orders WHERE order_id = ?`,
+        [orderId]
+      );
+      if (currentOrderRows.length > 0) {
+        oldOrderStatus = currentOrderRows[0].order_status;
       }
 
-      // Update additional requests in order_info
-      // Check if order_info exists, if not, insert it (UPSERT logic)
+      // 2. Update order_info.order_additional_requests
       const [orderInfoExists] = await connection.query(
         `SELECT 1 FROM order_info WHERE order_id = ?`,
         [orderId]
       );
 
-      if (additional_requests !== undefined) {
-        // Only update if additional_requests is explicitly provided
+      if (order_additional_requests !== undefined) {
         if (orderInfoExists.length > 0) {
           const [result] = await connection.query(
             `UPDATE order_info SET order_additional_requests = ? WHERE order_id = ?`,
-            [additional_requests, orderId]
+            [order_additional_requests, orderId]
           );
           updatedCount += result.affectedRows;
         } else {
           const [result] = await connection.query(
             `INSERT INTO order_info (order_id, order_additional_requests) VALUES (?, ?)`,
-            [orderId, additional_requests]
+            [orderId, order_additional_requests]
           );
           updatedCount += result.affectedRows;
         }
       }
 
-      // Update services - delete existing and add new
+      // 3. Update individual services (delete and re-insert is a common strategy for many-to-many updates)
       if (services && Array.isArray(services)) {
         await connection.query(
           `DELETE FROM order_services WHERE order_id = ?`,
           [orderId]
         );
-        updatedCount++; // Count this as an update operation
+        updatedCount++; // Count the delete operation as an update
 
         if (services.length > 0) {
           const serviceValues = services.map((service) => [
             orderId,
             service.service_id,
-            service.service_completed ? 1 : 0,
+            service.service_completed ? 1 : 0, // Store as 1 or 0
           ]);
           const [result] = await connection.query(
             `INSERT INTO order_services (order_id, service_id, service_completed) VALUES ?`,
@@ -322,8 +356,71 @@ class OrderService {
         }
       }
 
+      // 4. Derive overall order_status based on updated individual services
+      let newOverallStatus = incomingOverallStatus; // Start with what frontend sent
+
+      // Fetch the *current* completion status of all services for this order
+      const [allServicesForOrder] = await connection.query(
+        `SELECT service_completed FROM order_services WHERE order_id = ?`,
+        [orderId]
+      );
+
+      if (allServicesForOrder.length > 0) {
+        const allCompleted = allServicesForOrder.every(
+          (s) => s.service_completed === 1
+        );
+
+        // Apply derivation logic based on user's requirements
+        if (incomingOverallStatus === "cancelled") {
+          // If admin explicitly set to cancelled, respect that.
+          newOverallStatus = "cancelled";
+        } else if (allCompleted) {
+          newOverallStatus = "completed";
+        } else {
+          // If not all completed, it's pending (as per user's rule for display)
+          // If you want 'in_progress' to be derived if some are completed, add that logic here.
+          newOverallStatus = "pending";
+        }
+      } else {
+        // If there are no services associated with the order, it's pending by default
+        if (incomingOverallStatus !== "cancelled") {
+          newOverallStatus = "pending";
+        }
+      }
+
+      // 5. Update orders.order_status and order_info.order_completion_date
+      const [orderUpdateResult] = await connection.query(
+        `UPDATE orders SET order_status = ? WHERE order_id = ?`,
+        [newOverallStatus, orderId]
+      );
+      updatedCount += orderUpdateResult.affectedRows;
+
+      // If status changed to completed, set completion date
+      if (newOverallStatus === "completed" && oldOrderStatus !== "completed") {
+        await connection.query(
+          `UPDATE order_info SET order_completion_date = NOW() WHERE order_id = ?`,
+          [orderId]
+        );
+        updatedCount++;
+
+        // Trigger email notification
+        this.sendCompletionNotification(orderId).catch((err) =>
+          console.error("Failed to send completion notification:", err)
+        );
+      } else if (
+        newOverallStatus !== "completed" &&
+        oldOrderStatus === "completed"
+      ) {
+        // If status changed from completed to something else, clear completion date
+        await connection.query(
+          `UPDATE order_info SET order_completion_date = NULL WHERE order_id = ?`,
+          [orderId]
+        );
+        updatedCount++;
+      }
+
       await connection.commit();
-      return updatedCount > 0; // Return true if any rows were affected
+      return updatedCount > 0;
     } catch (error) {
       await connection.rollback();
       console.error(
@@ -332,28 +429,52 @@ class OrderService {
       );
       throw error;
     } finally {
-      connection.release();
+      if (connection) connection.release();
     }
   }
 
+  // Removed updateOrderStatus as its logic is now within updateOrder
+
   /**
-   * Updates only the status of an existing order.
-   * @param {number} orderId - The ID of the order to update.
-   * @param {string} status - The new status of the order.
-   * @returns {boolean} True if the status was updated, false otherwise.
+   * Sends completion notification email for an order.
+   * This is called internally by updateOrder when status transitions to 'completed'.
    */
-  async updateOrderStatus(orderId, status) {
+  async sendCompletionNotification(orderId) {
     let connection;
     try {
       connection = await pool.getConnection();
-      const [result] = await connection.query(
-        `UPDATE orders SET order_status = ? WHERE order_id = ?`,
-        [status, orderId]
+
+      const [orderRows] = await connection.query(
+        `SELECT
+          o.order_id,
+          c.customer_email,
+          ci.customer_first_name,
+          ci.customer_last_name,
+          oi.order_completion_date
+        FROM orders o
+        JOIN customer_identifier c ON o.customer_id = c.customer_id
+        JOIN customer_info ci ON c.customer_id = ci.customer_id
+        LEFT JOIN order_info oi ON o.order_id = oi.order_id
+        WHERE o.order_id = ?`,
+        [orderId]
       );
-      return result.affectedRows > 0;
+
+      if (orderRows.length > 0) {
+        const order = orderRows[0];
+        const customerName = `${order.customer_first_name} ${order.customer_last_name}`;
+        const completionDate =
+          order.order_completion_date || new Date().toISOString().split("T")[0];
+
+        await emailService.sendOrderCompletionEmail(
+          order.customer_email,
+          customerName,
+          order.order_id,
+          completionDate
+        );
+      }
     } catch (error) {
       console.error(
-        `Error in OrderService.updateOrderStatus for orderId ${orderId}:`,
+        `Error sending completion notification for order ${orderId}:`,
         error
       );
       throw error;

@@ -53,12 +53,10 @@ exports.addVehicle = async (req, res) => {
 
     // Basic validation for required fields
     if (!customer_id || !vehicle_make || !vehicle_model) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Missing required fields (customer_id, vehicle_make, vehicle_model)",
-        });
+      return res.status(400).json({
+        message:
+          "Missing required fields (customer_id, vehicle_make, vehicle_model)",
+      });
     }
 
     const newVehicleId = await vehicleService.addVehicle({
@@ -78,12 +76,9 @@ exports.addVehicle = async (req, res) => {
     console.error("Error in addVehicle:", error.message);
     // More specific error handling for duplicate serial numbers, etc.
     if (error.message.includes("Duplicate entry")) {
-      return res
-        .status(409)
-        .json({
-          message:
-            "Vehicle already exists or has a duplicate serial number/tag.",
-        });
+      return res.status(409).json({
+        message: "Vehicle already exists or has a duplicate serial number/tag.",
+      });
     }
     res.status(500).json({ error: "Failed to add vehicle" });
   }
@@ -109,12 +104,10 @@ exports.updateVehicle = async (req, res) => {
 
     // Basic validation
     if (!vehicle_id || !vehicle_make || !vehicle_model) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Missing required fields (vehicle_id, vehicle_make, vehicle_model)",
-        });
+      return res.status(400).json({
+        message:
+          "Missing required fields (vehicle_id, vehicle_make, vehicle_model)",
+      });
     }
 
     const updated = await vehicleService.updateVehicle(vehicle_id, {
@@ -171,5 +164,23 @@ exports.getVehiclesByCustomerId = async (req, res) => {
   } catch (error) {
     console.error("Error in getVehiclesByCustomerId:", error.message);
     res.status(500).json({ error: "Failed to fetch customer vehicles" });
+  }
+};
+
+/**
+ * Get all vehicles.
+ * GET /api/vehicle/all
+ */
+exports.getAllVehicles = async (req, res) => {
+  // NEW CONTROLLER FUNCTION
+  try {
+    const vehicles = await vehicleService.getAllVehicles();
+    res.json({
+      success: true,
+      data: vehicles,
+    });
+  } catch (error) {
+    console.error("Error in getAllVehicles:", error.message);
+    res.status(500).json({ error: "Failed to fetch all vehicles" });
   }
 };

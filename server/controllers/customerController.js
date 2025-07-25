@@ -1,126 +1,75 @@
+// controllers/customer.controller.js
 const customerService = require("../services/customerService");
-// const vehicleService = require("../services/vehicleService");
+
+exports.createCustomer = async (req, res) => {
+  try {
+    const customerId = await customerService.createCustomer(req.body);
+    res.status(201).json({ customerId, message: "Customer created successfully." });
+  } catch (error) {
+    console.error("Error in createCustomer controller:", error);
+    res.status(500).json({ error: error.message, message: "Failed to create customer." });
+  }
+};
 
 exports.getCustomers = async (req, res) => {
   try {
-    const {
-      page = 1,
-      limit = 10,
-      sortby = "customer_added_date",
-      search = "",
-    } = req.query;
-
-    const result = await customerService.getCustomers(
+    const { page = 1, limit = 10, sortby, search } = req.query;
+    const { total, customers } = await customerService.getCustomers(
       parseInt(page),
       parseInt(limit),
       sortby,
       search
     );
 
+ 
+
     res.json({
-      limit: parseInt(limit),
-      customers: result.customers,
-      total: result.total,
+      success: true,
+      data: { customers, total }, // Ensure this structure matches what frontend expects
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error in getCustomers controller:", error);
+    res.status(500).json({ error: error.message, message: "Failed to fetch customers." });
   }
 };
 
-exports.getCustomer = async (req, res) => {
+exports.getCustomerById = async (req, res) => {
   try {
     const customer = await customerService.getCustomerById(req.params.id);
-
-    res.json({
-      customer_id: customer.customer_id,
-      customer_email: customer.customer_email,
-      customer_phone_number: customer.customer_phone_number,
-      customer_first_name: customer.customer_first_name,
-      customer_last_name: customer.customer_last_name,
-      customer_hash: customer.customer_hash || "",
-      active_customer_status: customer.customer_active_status,
-      customer_added_date: customer.customer_added_date,
-    });
-  } catch (error) {
-    res.status(404).json({ error: error.message });
-  }
-};
-
-exports.addCustomer = async (req, res) => {
-  try {
-    const {
-      customer_email,
-      customer_phone_number,
-      customer_first_name,
-      customer_last_name,
-      customer_hash = "",
-      active_customer_status = 1,
-      customer_added_date = new Date(),
-    } = req.body;
-
-    if (
-      !customer_email ||
-      !customer_phone_number ||
-      !customer_first_name ||
-      !customer_last_name
-    ) {
-      return res.status(400).json({ error: "Required fields missing" });
+    if (!customer) {
+      return res.status(404).json({ message: "Customer not found" });
     }
-
-    const customerId = await customerService.createCustomer({
-      email: customer_email,
-      phone: customer_phone_number,
-      firstName: customer_first_name,
-      lastName: customer_last_name,
-      hash: customer_hash,
-      activeStatus: active_customer_status,
-      addedDate: customer_added_date,
-    });
-
-    res.status(201).json({
-      success: true,
-      customerId,
-    });
+    res.json(customer);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
+    console.error(`Error in getCustomerById controller for ID ${req.params.id}:`, error);
+    res.status(500).json({ error: error.message, message: "Failed to fetch customer details." });
   }
 };
 
 exports.updateCustomer = async (req, res) => {
   try {
-    const { id } = req.params;
-    const {
-      customer_phone_number,
-      customer_first_name,
-      customer_last_name,
-      active_customer_status,
-    } = req.body;
-
-    await customerService.updateCustomer(id, {
-      phone: customer_phone_number,
-      firstName: customer_first_name,
-      lastName: customer_last_name,
-      activeStatus: active_customer_status,
+    const updated = await customerService.updateCustomer(req.params.id, {
+      phone: req.body.phone,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      activeStatus: req.body.activeStatus,
     });
 
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
+    if (!updated) {
+      return res
+        .status(404)
+        .json({ message: "Customer not found or no changes made." });
+    }
 
-exports.getCustomerVehicles = async (req, res) => {
-  try {
-    const vehicles = await vehicleService.getVehiclesByCustomerId(
-      req.params.id
+    res.json({ success: true, message: "Customer updated successfully." });
+  } catch (error) {
+    console.error(
+      `Error in updateCustomer controller for ID ${req.params.id}:`,
+      error
     );
-    res.json({
-      customer_id: parseInt(req.params.id),
-      vehicles: vehicles,
+    res.status(500).json({
+      error: error.message,
+      message: "Failed to update customer.",
     });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
 };
-

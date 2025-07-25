@@ -9,6 +9,7 @@ const customerRoutes = require("./customerRoutes");
 const vehicleRoutes = require("./vehicle.route"); // Make sure this path is correct
 const orderRoutes = require("./orderRoutes");
 const servicesRouter = require("./servicesRoute");
+const vehicleController = require("../controllers/vehicle.controller");
 
 // ... other uses
 Router.use("/vehicle", vehicleRoutes); // This line is already there, ensure it's correct
@@ -26,5 +27,6 @@ Router.use("/employee", loginRouter);
 // Mount order routes
 Router.use('/order', orderRoutes);
 Router.use("/services", servicesRouter);
+Router.get("/vehicle/all", vehicleController.getAllVehicles);
 // Export all configured routes
 module.exports = Router;
