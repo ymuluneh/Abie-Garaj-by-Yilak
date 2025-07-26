@@ -22,15 +22,15 @@ const Contact = () => {
           </p>
           <div className={styles.contactItem}>
             <strong>Address:</strong>
-            <span>548, Tailstoi Town 5238 MT, La city, IA 5224</span>
+            <span>ETHIOPIA,REGION 03, BDR city,Kebelie 13</span>
           </div>
           <div className={styles.contactItem}>
             <strong>Email:</strong>
-            <span>contact@buildtruck.com</span>
+            <span>abiegarage13@gmail.com</span>
           </div>
           <div className={styles.contactItem}>
             <strong>Phone:</strong>
-            <span>1800 456 7890 / 1254 897 3654</span>
+            <span>0922980682</span>
           </div>
         </div>
       </section>

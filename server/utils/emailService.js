@@ -2,10 +2,18 @@ const nodemailer = require("nodemailer");
 
 // Create transporter
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // true for 465, false for other ports
+  requireTLS: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
+  },
+  connectionTimeout: 10000, // 10 seconds
+  socketTimeout: 10000, // 10 seconds
+  tls: {
+    rejectUnauthorized: false, // Only for testing, remove in production
   },
 });
 
@@ -52,7 +60,7 @@ function createOrderCompletionTemplate({
           </p>
         </div>
         <div style="background-color: #eef2f5; padding: 20px; text-align: center; font-size: 12px; color: #888;">
-          &copy; ${new Date().getFullYear()} Your Garage Service. All rights reserved.
+          &copy; ${new Date().getFullYear()} Abie Garage Service. All rights reserved.
         </div>
       </div>
     </div>

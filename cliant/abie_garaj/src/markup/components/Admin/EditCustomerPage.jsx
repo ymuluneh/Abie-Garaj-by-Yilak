@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getCustomerById, updateCustomer } from "../../../services/api"; 
+import { getCustomerById, updateCustomer } from "../../../services/api";
+import styles from "./EditCustomer.module.css";
 
 const EditCustomerPage = () => {
   const { id } = useParams();
@@ -10,47 +11,32 @@ const EditCustomerPage = () => {
     firstName: "",
     lastName: "",
     phone: "",
-    activeStatus: true, // Boolean for checkbox
+    activeStatus: true,
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     const fetchCustomer = async () => {
-      setLoading(true); // Start loading
-      setError(""); // Clear previous errors
       try {
         const response = await getCustomerById(id);
-        const customer = response.data; // Axios puts the response data in .data
+        const customer = response.data;
 
-        // Safely set formData, converting null/undefined to empty strings
         setFormData({
           email: customer.customer_email || "",
           firstName: customer.customer_first_name || "",
           lastName: customer.customer_last_name || "",
           phone: customer.customer_phone_number || "",
-          activeStatus: customer.customer_active_status === 1, // Convert 0/1 to boolean
+          activeStatus: customer.customer_active_status === 1,
         });
       } catch (err) {
-        // Changed error to err to avoid conflict with error state
-        console.error("Failed to load customer data:", err);
-        setError(
-          err.response?.data?.message ||
-            "Failed to load customer data. Please try again."
-        );
+        console.error("Failed to load customer:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) {
-      fetchCustomer();
-    } else {
-      setLoading(false);
-      setError("No customer ID provided.");
-    }
-  }, [id]); // Depend on 'id' to re-fetch if ID changes
+    fetchCustomer();
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,157 +47,77 @@ const EditCustomerPage = () => {
     setFormData((prev) => ({ ...prev, activeStatus: e.target.checked }));
   };
 
- const handleSubmit = async (e) => {
-   e.preventDefault();
-   setError("");
-   setSuccess("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await updateCustomer(id, {
+        customer_first_name: formData.firstName,
+        customer_last_name: formData.lastName,
+        customer_phone_number: formData.phone,
+        customer_active_status: formData.activeStatus ? 1 : 0,
+      });
+      navigate("/admin/customers");
+    } catch (err) {
+      console.error("Update failed:", err);
+    }
+  };
 
-   try {
-     const dataToSend = {
-       phone: formData.phone,
-       firstName: formData.firstName,
-       lastName: formData.lastName,
-       activeStatus: formData.activeStatus,
-     };
-
-     await updateCustomer(id, dataToSend);
-
-     setSuccess("Customer updated successfully!");
-     setTimeout(() => navigate(`/admin/customer/${id}`), 1500);
-   } catch (err) {
-     console.error("Error updating customer:", err);
-     setError(
-       err.response?.data?.message ||
-         "Failed to update customer. Please try again."
-     );
-   }
- };
-
-  // Conditional rendering for loading, error, and not found states
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        Loading customer data...
-      </div>
-    );
-  }
-
-  // If error occurred or customer not found after loading
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8 text-red-700">{error}</div>
-    );
-  }
-
-  // If customer data is fetched but some core field (like email) is missing, it implies not found
-  if (!formData.email) {
-    return (
-      <div className="container mx-auto px-4 py-8 text-red-700">
-        Customer not found.
-      </div>
-    );
-  }
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Edit Customer</h1>
+    <div className={styles.container}>
+      <h1 className={styles.title}>Editione Admin</h1>
 
-      {success && (
-        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6">
-          {success}
-        </div>
-      )}
-      {error && (
-        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
-          {error}
-        </div>
-      )}
+      <div className={styles.editForm}>
+        <h3 className={styles.subtitle}>
+          Edit: {formData.firstName} {formData.lastName}
+        </h3>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6">
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="email">
-            Customer Email
-          </label>
+        <div className={styles.emailDisplay}>
+          <strong>Customer email:</strong> {formData.email}
+        </div>
+
+        <form onSubmit={handleSubmit}>
           <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
+            type="text"
+            name="firstName"
+            value={formData.firstName}
             onChange={handleChange}
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
+            className={styles.inputField}
           />
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-gray-700 mb-2" htmlFor="firstName">
-              First Name
-            </label>
-            <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 mb-2" htmlFor="lastName">
-              Last Name
-            </label>
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2" htmlFor="phone">
-            Phone Number
-          </label>
           <input
-            type="tel"
-            id="phone"
+            type="text"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            className={styles.inputField}
+          />
+
+          <input
+            type="text"
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-            pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-            placeholder="555-555-5555"
+            className={styles.inputField}
           />
-        </div>
 
-        <div className="mb-6">
-          <label className="flex items-center">
+          <div className={styles.checkboxContainer}>
             <input
               type="checkbox"
               name="activeStatus"
               checked={formData.activeStatus}
               onChange={handleCheckboxChange}
-              className="form-checkbox h-5 w-5 text-blue-600"
+              className={styles.checkboxInput}
             />
-            <span className="ml-2 text-gray-700">Is active customer</span>
-          </label>
-        </div>
+            <label>Is active customer</label>
+          </div>
 
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          UPDATE
-        </button>
-      </form>
+          <button type="submit" className={styles.updateButton}>
+            UPDATE
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

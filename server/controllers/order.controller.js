@@ -96,5 +96,4 @@ exports.updateOrder = async (req, res) => {
   }
 };
 
-// Removed exports.updateOrderStatus
-// Removed exports.notifyOrderCompletion
+

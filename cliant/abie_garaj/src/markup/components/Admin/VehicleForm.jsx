@@ -51,7 +51,7 @@ const VehicleForm = ({ customerId: propCustomerId }) => {
       return (
         fullName.includes(searchLower) ||
         email.includes(searchLower) ||
-        phone.includes(searchTerm) // Keep phone as string for exact match
+        phone.includes(searchTerm)
       );
     });
 
@@ -118,13 +118,25 @@ const VehicleForm = ({ customerId: propCustomerId }) => {
   };
 
   const handleCustomerSelect = (customerId) => {
-    setVehicle((prev) => ({ ...prev, customer_id: customerId }));
+    const selectedCustomer = customers.find(
+      (c) => c.customer_id === customerId
+    );
+    if (selectedCustomer) {
+      const customerName = `${selectedCustomer.customer_first_name} ${selectedCustomer.customer_last_name}`;
+      setVehicle((prev) => ({ ...prev, customer_id: customerId }));
+      setSearchTerm(customerName); // Set search term to customer's name
+    }
     setShowDropdown(false);
   };
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     setShowDropdown(true);
+
+    // If the search term is changed after selection, clear the selection
+    if (vehicle.customer_id) {
+      setVehicle((prev) => ({ ...prev, customer_id: "" }));
+    }
   };
 
   const handleChange = (e) => {
@@ -331,15 +343,16 @@ const VehicleForm = ({ customerId: propCustomerId }) => {
             )}
 
             {vehicle.customer_id && (
-              <div className="mt-2">
-                <strong>Selected Customer:</strong>{" "}
+              <div className="mt-2 small text-muted">
+                <strong>Phone:</strong>{" "}
                 {
                   customers.find((c) => c.customer_id === vehicle.customer_id)
-                    ?.customer_first_name
+                    ?.customer_phone_number
                 }{" "}
+                | <strong>Email:</strong>{" "}
                 {
                   customers.find((c) => c.customer_id === vehicle.customer_id)
-                    ?.customer_last_name
+                    ?.customer_email
                 }
               </div>
             )}

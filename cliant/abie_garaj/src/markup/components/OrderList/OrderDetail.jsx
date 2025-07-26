@@ -246,7 +246,7 @@ const OrderDetail = ({ isAdmin }) => {
               : "N/A"}
           </p>
           <p>
-            <strong>Received by:</strong>{" "}
+            <strong>Service Advisor:</strong>{" "}
             {order.employee_first_name && order.employee_last_name
               ? `${order.employee_first_name} ${order.employee_last_name}`
               : "N/A"}
@@ -333,13 +333,13 @@ const OrderDetail = ({ isAdmin }) => {
           <div className={styles.receiptPrintArea}>
             <div className={styles.receiptHeaderPrint}>
               <Typography variant="h5" className={styles.receiptTitlePrint}>
-                ARE GARAGE
+                ABE GARAGE
               </Typography>
               <Typography variant="subtitle1" sx={{ marginBottom: "5px" }}>
-                548 Telatain Town, 5238 MT. La City, IA 52264
+                Ethiopia, Region 03. Bahir Dar City, kebelie 13
               </Typography>
               <Typography variant="subtitle1">
-                Email: contact@autorex.com | Call us on: +1 800 456 7890
+                Email: abiegarage13@gmail.com | Call us on: +251922980682
               </Typography>
               <Box
                 sx={{
@@ -456,7 +456,7 @@ const OrderDetail = ({ isAdmin }) => {
                   mb: 1,
                 }}
               >
-                <Typography>Subtotal:</Typography>
+                <Typography>Sub Total:</Typography>
                 <Typography fontWeight="bold">
                   ${receiptCalculations.subtotal}
                 </Typography>
@@ -508,14 +508,14 @@ const OrderDetail = ({ isAdmin }) => {
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseReceipt}>Close</Button>
+          <Button onClick={handleCloseReceipt}></Button>
           <Button
             onClick={handleActualPrint}
             variant="contained"
             color="primary"
             startIcon={<PrintIcon />}
           >
-            Print Receipt
+            
           </Button>
         </DialogActions>
       </Dialog>

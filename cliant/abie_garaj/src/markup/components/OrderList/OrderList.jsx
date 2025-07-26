@@ -20,12 +20,15 @@ const OrderList = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
+      // Ensure searchTerm is properly passed to the API
+      const searchQuery =
+        searchTerm.trim() !== "" ? searchTerm.trim() : undefined;
       const response = await getOrders(
         currentPage,
         10,
         statusFilter,
         true,
-        searchTerm
+        searchQuery
       );
       setOrders(response.data || []);
       setTotalPages(response.totalPages || 1);
@@ -46,10 +49,12 @@ const OrderList = () => {
     const value = e.target.value;
     setSearchTerm(value);
 
+    // Clear previous timeout
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
 
+    // Set new timeout
     setSearchTimeout(
       setTimeout(() => {
         setCurrentPage(1);
@@ -87,7 +92,6 @@ const OrderList = () => {
         </div>
       </div>
 
-      {/* Search bar positioned below header but above table */}
       <div className={styles.searchBar}>
         <div className={styles.searchContainer}>
           <FaSearch className={styles.searchIcon} />
@@ -134,7 +138,9 @@ const OrderList = () => {
                         <td>
                           {order.vehicle_year} {order.vehicle_make}
                         </td>
-                        <td rowSpan="3">{order.order_date}</td>
+                        <td rowSpan="3">
+                          {new Date(order.order_date).toLocaleDateString()}
+                        </td>
                         <td rowSpan="3">
                           {order.employee_first_name && order.employee_last_name
                             ? `${order.employee_first_name} ${order.employee_last_name}`

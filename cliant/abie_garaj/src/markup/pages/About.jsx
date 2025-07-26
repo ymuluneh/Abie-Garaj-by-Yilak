@@ -17,7 +17,7 @@ const About = () => {
         <div className={styles.overlay}></div>
         <div className={styles.content}>
           <p className={styles.title}>
-            <a href="/">Home</a> About us
+            <a href="/">Back to Home</a> <br /> About us
           </p>
         </div>
       </section>

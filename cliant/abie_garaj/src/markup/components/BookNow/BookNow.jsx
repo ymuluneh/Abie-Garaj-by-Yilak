@@ -11,7 +11,10 @@ const BookNow = () => {
           <FaPhoneAlt className={styles.icon} />
           <span className={styles.phoneNumber}>+1800 456 7890</span>
         </div>
-        <button className={`${styles.bookNowBtn} btn`}>Book Now</button>
+        <button className={`${styles.bookNowBtn} btn`}>
+          {" "}
+          <a href="/admin/order">Book Now</a>
+        </button>
       </div>
     </section>
   );

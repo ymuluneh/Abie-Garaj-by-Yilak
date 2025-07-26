@@ -1,0 +1,69 @@
+/* EditCustomer.module.css */
+.container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.editForm {
+  background: white;
+  padding: 20px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.subtitle {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #444;
+}
+
+.emailDisplay {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.inputField {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.checkboxContainer {
+  margin: 15px 0;
+  display: flex;
+  align-items: center;
+}
+
+.checkboxInput {
+  margin-right: 8px;
+}
+
+.updateButton {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  /* REMOVED width: 100% */
+  display: inline-block; 
+  margin-top: 10px; 
+}
+
+.updateButton:hover {
+  background: #c0392b;
+}

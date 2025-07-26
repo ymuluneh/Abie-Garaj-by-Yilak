@@ -35,10 +35,10 @@
   font-size: 1.2em;
 }
 
-.bookNowBtn {
-  background-color: var(--secondary-color);
+.bookNowBtn a {
+  /* background-color: var(--secondary-color); */
   color: var(--white-color);
-  border-radius: 5px;
+  border-radius: 2px black solid;
   padding: 12px 25px;
   font-size: 1em;
 }
