@@ -27,7 +27,7 @@ const addEmployee = async ({
 
     const [employeeRes] = await conn.query(
       "INSERT INTO employee (employee_email, employee_active_status) VALUES (?, ?)",
-      [email, 1]
+      [email, 1] // New employees are active by default
     );
     const employeeId = employeeRes.insertId;
 
@@ -76,7 +76,6 @@ const checkEmployeeExistenceByEmail = async (email) => {
 
 // ✅ Get Employee by Email
 const getEmployeeByEmail = async (email) => {
-  // This is already present, but for consistency
   const conn = await pool.getConnection();
   try {
     const query = `
@@ -103,12 +102,12 @@ const getEmployeeById = async (employeeId) => {
         e.employee_id,
         e.employee_email,
         e.employee_active_status,
+        e.employee_added_date,
         ei.employee_first_name,
         ei.employee_last_name,
         ei.employee_phone,
         er.company_role_id,
-        cr.company_role_name,
-        e.employee_added_date
+        cr.company_role_name
       FROM employee AS e
       INNER JOIN employee_info AS ei ON e.employee_id = ei.employee_id
       INNER JOIN employee_role AS er ON e.employee_id = er.employee_id
@@ -142,7 +141,7 @@ const getAllEmployees = async () => {
       INNER JOIN employee_role AS er ON e.employee_id = er.employee_id
       INNER JOIN company_roles AS cr ON er.company_role_id = cr.company_role_id
       ORDER BY e.employee_id DESC
-    `; // Removed LIMIT 10, to get all employees for the list
+    `;
     const [rows] = await conn.query(query);
     return rows;
   } finally {
@@ -188,35 +187,37 @@ const updateEmployee = async (
   }
 };
 
-// ✅ Delete Employee
+// ✅ NEW SOFT DELETE (DEACTIVATE) EMPLOYEE
 const deleteEmployee = async (employeeId) => {
   const conn = await pool.getConnection();
   try {
-    await conn.beginTransaction();
-
-    // Delete from dependent tables first
-    await conn.query("DELETE FROM employee_pass WHERE employee_id = ?", [
-      employeeId,
-    ]);
-    await conn.query("DELETE FROM employee_info WHERE employee_id = ?", [
-      employeeId,
-    ]);
-    await conn.query("DELETE FROM employee_role WHERE employee_id = ?", [
-      employeeId,
-    ]);
-
-    // Finally, delete from the main employee table
+    // Update employee_active_status to 0 (inactive)
     const [result] = await conn.query(
-      "DELETE FROM employee WHERE employee_id = ?",
+      `UPDATE employee SET employee_active_status = 0 WHERE employee_id = ?`,
       [employeeId]
     );
+    return result.affectedRows > 0; // Returns true if a row was updated
+  } catch (error) {
+    console.error("Error deactivating employee in service:", error);
+    throw new Error(`Error deactivating employee: ${error.message}`);
+  } finally {
+    conn.release();
+  }
+};
 
-    await conn.commit();
-    return result.affectedRows > 0; // True if an employee was deleted
-  } catch (err) {
-    await conn.rollback();
-    console.error("Error deleting employee in service:", err);
-    throw err;
+// ✅ NEW REACTIVATE EMPLOYEE
+const reactivateEmployee = async (employeeId) => {
+  const conn = await pool.getConnection();
+  try {
+    // Update employee_active_status to 1 (active)
+    const [result] = await conn.query(
+      `UPDATE employee SET employee_active_status = 1 WHERE employee_id = ?`,
+      [employeeId]
+    );
+    return result.affectedRows > 0; // Returns true if a row was updated
+  } catch (error) {
+    console.error("Error reactivating employee in service:", error);
+    throw new Error(`Error reactivating employee: ${error.message}`);
   } finally {
     conn.release();
   }
@@ -227,7 +228,8 @@ module.exports = {
   checkEmployeeExistenceByEmail,
   getEmployeeByEmail,
   getAllEmployees,
-  getEmployeeById, // Export the new function
-  updateEmployee, // Export the new function
-  deleteEmployee, // Export the new function
+  getEmployeeById,
+  updateEmployee,
+  deleteEmployee, // This now points to the soft delete function
+  reactivateEmployee, // Export the new reactivate function
 };

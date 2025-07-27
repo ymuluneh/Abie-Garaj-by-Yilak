@@ -10,6 +10,9 @@ const vehicleRoutes = require("./vehicle.route"); // Make sure this path is corr
 const orderRoutes = require("./orderRoutes");
 const servicesRouter = require("./servicesRoute");
 const vehicleController = require("../controllers/vehicle.controller");
+const inventoryRoutes = require("./inventoryRoutes");
+Router.use("/inventory", inventoryRoutes);
+
 
 // ... other uses
 Router.use("/vehicle", vehicleRoutes); // This line is already there, ensure it's correct

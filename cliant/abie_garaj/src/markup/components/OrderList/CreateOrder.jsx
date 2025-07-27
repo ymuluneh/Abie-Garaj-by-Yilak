@@ -5,15 +5,11 @@ import {
   getCustomers,
   getCustomerVehicles,
   createOrder,
-  getServices, 
+  getServices,
+  getAllInventoryItems,
 } from "../../../services/api";
 import styles from "./CreateOrder.module.css";
 
-/**
- * Decodes JWT token payload to extract employee information
- * @param {string} token - JWT token from localStorage
- * @returns {Object|null} Decoded token payload or null if decoding fails
- */
 const decodeTokenPayload = (token) => {
   try {
     const base64Url = token.split(".")[1];
@@ -32,7 +28,7 @@ const decodeTokenPayload = (token) => {
 };
 
 const CreateOrder = () => {
-  // State management for form steps and data
+  // Existing state
   const [step, setStep] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [customers, setCustomers] = useState([]);
@@ -44,67 +40,65 @@ const CreateOrder = () => {
   const [additionalRequests, setAdditionalRequests] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [servicesLoading, setServicesLoading] = useState(true); // Set to true initially for services
+  const [servicesLoading, setServicesLoading] = useState(true);
   const [currentEmployee, setCurrentEmployee] = useState(null);
   const navigate = useNavigate();
 
-  /**
-   * Fetches initial customer data and sets mock services
-   */
+  // New state for inventory management
+  const [inventoryItems, setInventoryItems] = useState([]);
+  const [inventoryLoading, setInventoryLoading] = useState(false);
+  const [serviceQuantities, setServiceQuantities] = useState({});
+
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); // Indicate general loading
+      setLoading(true);
       setError("");
       try {
-        // Fetch customers
         const customersRes = await getCustomers(1, 100, searchTerm);
         setCustomers(customersRes.data.customers);
 
-        // Fetch actual services from the API
-        setServicesLoading(true); // Indicate services are loading
-        const servicesData = await getServices();
+        setServicesLoading(true);
+        const [servicesData, inventoryData] = await Promise.all([
+          getServices(),
+          getAllInventoryItems(),
+        ]);
         setServices(servicesData);
+        setInventoryItems(inventoryData);
       } catch (error) {
         console.error("Initialization error:", error);
         setError(
           "Failed to load initial data. Please check network and backend."
         );
       } finally {
-        setLoading(false); // General loading finished
-        setServicesLoading(false); // Services loading finished
+        setLoading(false);
+        setServicesLoading(false);
       }
     };
     fetchData();
-  }, [searchTerm]); // Re-run when searchTerm changes to refresh customer list
+  }, [searchTerm]);
 
-  /**
-   * Fetches vehicles when a customer is selected
-   */
   useEffect(() => {
     if (selectedCustomer) {
       const fetchVehicles = async () => {
-        setLoading(true); // Indicate vehicle loading
+        setLoading(true);
         try {
           const response = await getCustomerVehicles(selectedCustomer);
           setVehicles(response.data.vehicles || []);
         } catch (error) {
           console.error("Error fetching vehicles:", error);
           setError("Failed to load customer vehicles");
-          setVehicles([]); // Clear vehicles on error
+          setVehicles([]);
         } finally {
-          setLoading(false); // Vehicle loading finished
+          setLoading(false);
         }
       };
       fetchVehicles();
     } else {
-      setVehicles([]); // Clear vehicles if no customer is selected
-      setSelectedVehicle(null); // Deselect vehicle if customer is unselected
+      setVehicles([]);
+      setSelectedVehicle(null);
     }
   }, [selectedCustomer]);
 
-  /**
-   * Gets current employee data from auth token
-   */
   useEffect(() => {
     const fetchCurrentEmployee = async () => {
       try {
@@ -120,36 +114,39 @@ const CreateOrder = () => {
     fetchCurrentEmployee();
   }, []);
 
-  /**
-   * Handles search input changes
-   */
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
 
-  /**
-   * Toggles service selection
-   * @param {number} serviceId - ID of the service to toggle
-   */
   const handleServiceToggle = (serviceId) => {
     setSelectedServices((prev) =>
       prev.includes(serviceId)
         ? prev.filter((id) => id !== serviceId)
         : [...prev, serviceId]
     );
+
+    if (!serviceQuantities[serviceId]) {
+      setServiceQuantities((prev) => ({
+        ...prev,
+        [serviceId]: {},
+      }));
+    }
   };
 
-  /**
-   * Calculates total price of selected services
-   * @returns {string} Formatted total price
-   */
+  const handleQuantityChange = (serviceId, itemId, value) => {
+    setServiceQuantities((prev) => ({
+      ...prev,
+      [serviceId]: {
+        ...prev[serviceId],
+        [itemId]: parseFloat(value) || 0,
+      },
+    }));
+  };
+
   const calculateTotal = () => {
     return services
       .reduce((total, service) => {
-        // Iterate through all services to find selected ones
         if (selectedServices.includes(service.service_id)) {
-          // Ensure service_price is treated as a number, defaulting to 0 if undefined/null
-          // FIX APPLIED HERE: parseFloat to ensure it's a number
           return total + parseFloat(service?.service_price || 0);
         }
         return total;
@@ -157,9 +154,6 @@ const CreateOrder = () => {
       .toFixed(2);
   };
 
-  /**
-   * Handles order submission
-   */
   const handleSubmit = async () => {
     if (!selectedCustomer || !selectedVehicle) {
       setError("Please select a customer and a vehicle.");
@@ -172,15 +166,19 @@ const CreateOrder = () => {
     try {
       const orderData = {
         customer_id: selectedCustomer,
-        employee_id: currentEmployee?.employee_id || 1, // Fallback to 1 if no employee (consider making this stricter in prod)
+        employee_id: currentEmployee?.employee_id || 1,
         vehicle_id: selectedVehicle,
-        services: selectedServices.map((service_id) => ({ service_id })),
+        services: selectedServices.map((service_id) => ({
+          service_id,
+          inventory_usage: Object.entries(serviceQuantities[service_id] || {})
+            .filter(([_, quantity]) => quantity > 0)
+            .map(([item_id, quantity]) => ({ item_id, quantity })),
+        })),
         additional_requests: additionalRequests,
       };
 
       const response = await createOrder(orderData);
 
-      // Handle different response formats safely
       const orderId =
         response?.data?.data?.orderId ||
         response?.data?.orderId ||
@@ -207,10 +205,6 @@ const CreateOrder = () => {
     }
   };
 
-  /**
-   * Renders content for each step of the order creation process
-   * @returns {JSX.Element} Step-specific UI components
-   */
   const renderStepContent = () => {
     switch (step) {
       case 1:
@@ -334,7 +328,7 @@ const CreateOrder = () => {
                 <p>No vehicles found for this customer.</p>
                 <button
                   className={styles.addVehicleButton}
-                  onClick={() => navigate(`/add-vehicle`)}
+                  onClick={() => navigate(`/admin/add-vehicle`)}
                 >
                   ADD NEW VEHICLE
                 </button>
@@ -344,11 +338,13 @@ const CreateOrder = () => {
         );
 
       case 3:
-        if (servicesLoading) {
+        if (servicesLoading || inventoryLoading) {
           return (
             <div className={styles.stepContent}>
               <h2>Select Services</h2>
-              <div className={styles.loadingContainer}>Loading services...</div>
+              <div className={styles.loadingContainer}>
+                Loading services and inventory...
+              </div>
             </div>
           );
         }
@@ -370,15 +366,53 @@ const CreateOrder = () => {
                   <div className={styles.serviceHeader}>
                     <h3>{service.service_name}</h3>
                     <span className={styles.servicePrice}>
-                      ${parseFloat(service.service_price ?? 0).toFixed(2)}{" "}
-                      {/* FIX APPLIED HERE (Line 372 in original code) */}
+                      ${parseFloat(service.service_price ?? 0).toFixed(2)}
                     </span>
                   </div>
                   <p className={styles.serviceDescription}>
                     {service.service_description}
                   </p>
+
                   {selectedServices.includes(service.service_id) && (
-                    <div className={styles.selectedOverlay}>Selected</div>
+                    <>
+                      {inventoryItems.length > 0 && (
+                        <div className={styles.inventorySelection}>
+                          <h4>Materials Used:</h4>
+                          {inventoryItems.map((item) => (
+                            <div
+                              key={item.item_id}
+                              className={styles.inventoryItem}
+                            >
+                              <label>
+                                {item.item_name} ({item.unit_of_measure}):
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  value={
+                                    serviceQuantities[service.service_id]?.[
+                                      item.item_id
+                                    ] || 0
+                                  }
+                                  onChange={(e) =>
+                                    handleQuantityChange(
+                                      service.service_id,
+                                      item.item_id,
+                                      e.target.value
+                                    )
+                                  }
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              </label>
+                              <span className={styles.currentStock}>
+                                (Available: {item.current_quantity})
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className={styles.selectedOverlay}>Selected</div>
+                    </>
                   )}
                 </div>
               ))}
@@ -440,13 +474,34 @@ const CreateOrder = () => {
                     const service = services.find(
                       (s) => s.service_id === serviceId
                     );
+                    const quantities = serviceQuantities[serviceId] || {};
+
                     return service ? (
                       <div key={serviceId} className={styles.selectedService}>
-                        <span>{service.service_name}</span>
-                        <span>
-                          ${parseFloat(service.service_price ?? 0).toFixed(2)}
-                          {/* FIX APPLIED HERE as well for consistency (Line 480 in original code) */}
-                        </span>
+                        <div>
+                          <span>{service.service_name}</span>
+                          <span>
+                            ${parseFloat(service.service_price ?? 0).toFixed(2)}
+                          </span>
+                        </div>
+                        {Object.keys(quantities).length > 0 && (
+                          <div className={styles.materialsUsed}>
+                            <strong>Materials:</strong>
+                            {Object.entries(quantities)
+                              .filter(([_, qty]) => qty > 0)
+                              .map(([itemId, qty]) => {
+                                const item = inventoryItems.find(
+                                  (i) => i.item_id == itemId
+                                );
+                                return item ? (
+                                  <div key={itemId}>
+                                    {item.item_name}: {qty}{" "}
+                                    {item.unit_of_measure}
+                                  </div>
+                                ) : null;
+                              })}
+                          </div>
+                        )}
                       </div>
                     ) : null;
                   })
@@ -476,10 +531,6 @@ const CreateOrder = () => {
     }
   };
 
-  /**
-   * Determines if the Next button should be disabled
-   * @returns {boolean} True if the button should be disabled
-   */
   const isNextDisabled = () => {
     switch (step) {
       case 1:
@@ -487,7 +538,7 @@ const CreateOrder = () => {
       case 2:
         return !selectedVehicle;
       case 3:
-        return servicesLoading; // Disable if services are still loading
+        return servicesLoading || inventoryLoading;
       default:
         return false;
     }

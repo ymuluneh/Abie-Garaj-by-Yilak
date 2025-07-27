@@ -28,6 +28,11 @@ createSchema(); //* Run schema.sql to create DB + tables
 app.use("/api", Routes);
 
 // 🔹 Test DB connection
+app.get("/test", (req,res)=>{
+  req.send("backend connected sucssusfully")
+});
+
+
 pool
   .getConnection() 
   .then((connection) => {

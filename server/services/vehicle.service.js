@@ -152,12 +152,65 @@ exports.getVehiclesByCustomerId = async (customerId) => {
  * Retrieves all vehicles from the database.
  * @returns {Promise<Array<Object>>} An array of all vehicle objects.
  */
-exports.getAllVehicles = async () => {
-  // NEW FUNCTION
+exports.getAllVehicles = async (search = "") => {
   try {
-    const [rows] = await pool.query("SELECT * FROM customer_vehicle_info");
-    return rows;
+    let query = `
+      SELECT
+        cvi.vehicle_id,
+        cvi.vehicle_year,
+        cvi.vehicle_make,
+        cvi.vehicle_model,
+        cvi.vehicle_type,
+        cvi.vehicle_mileage,
+        cvi.vehicle_tag,
+        cvi.vehicle_serial_number,
+        cvi.vehicle_color,
+        -- Select specific customer fields from joined tables
+        ci.customer_first_name,
+        ci.customer_last_name,
+        cust_id.customer_email,
+        cust_id.customer_phone_number
+      FROM
+        customer_vehicle_info AS cvi
+      JOIN
+        customer_identifier AS cust_id ON cvi.customer_id = cust_id.customer_id
+      JOIN
+        customer_info AS ci ON cust_id.customer_id = ci.customer_id
+    `;
+    const params = [];
+
+    if (search) {
+      // Add WHERE clause to filter by vehicle OR customer information
+      query += `
+        WHERE
+            cvi.vehicle_make LIKE ?
+            OR cvi.vehicle_model LIKE ?
+            OR cvi.vehicle_tag LIKE ?
+            OR cvi.vehicle_serial_number LIKE ?
+            OR ci.customer_first_name LIKE ?
+            OR ci.customer_last_name LIKE ?
+            OR cust_id.customer_email LIKE ?
+            OR cust_id.customer_phone_number LIKE ?
+      `;
+      const searchTermPattern = `%${search}%`;
+      params.push(
+        searchTermPattern,
+        searchTermPattern,
+        searchTermPattern,
+        searchTermPattern,
+        searchTermPattern,
+        searchTermPattern,
+        searchTermPattern,
+        searchTermPattern
+      );
+    }
+
+    query += ` ORDER BY cvi.vehicle_id DESC`; // Good practice to order results
+
+    const [rows] = await pool.query(query, params);
+    return rows; // This array of objects should now contain both vehicle and customer data
   } catch (error) {
-    throw new Error(`Database error fetching all vehicles: ${error.message}`);
+    console.error("Error in getAllVehicles service:", error);
+    throw new Error(`Failed to retrieve vehicles: ${error.message}`);
   }
 };

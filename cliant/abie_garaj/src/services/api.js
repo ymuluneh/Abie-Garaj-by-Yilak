@@ -6,6 +6,7 @@ const VEHICLE_API_BASE_URL = "http://localhost:3000/api/vehicle";
 const ORDER_API_BASE_URL = "http://localhost:3000/api/order";
 const SERVICE_API_BASE_URL = "http://localhost:3000/api/services";
 const EMPLOYEE_API_BASE_URL = "http://localhost:3000/api/employees";
+const INVENTORY_API_BASE_URL = "http://localhost:3000/api/inventory";
 
 // Helper function to get the authorization header
 const getAuthHeader = () => {
@@ -36,20 +37,11 @@ export const addCustomer = (data) => {
 
 export const getCustomers = async (page = 1, limit = 10, search = "") => {
   try {
-    // console.log("services/api.js: Calling GET customers with params:", {
-    //   page,
-    //   limit,
-    //   search,
-    // });
     const response = await axios.get(CUSTOMER_API_BASE_URL, {
       params: { page, limit, search },
       ...getAuthHeader(),
     });
-    // console.log(
-    //   "services/api.js: Raw response.data for getCustomers:",
-    //   response.data
-    // );
-    return response.data; // This should be { success: true, data: { customers: [...], total: X } }
+    return response.data;
   } catch (error) {
     console.error("Error fetching customers in api.js:", error);
     throw error;
@@ -59,8 +51,6 @@ export const getCustomers = async (page = 1, limit = 10, search = "") => {
 export const getAllCustomers = async () => {
   try {
     const response = await getCustomers(1, 99999);
-    // The getCustomers function now returns { data: { customers: [...], total: X } }
-    // So, we need to access response.data.customers
     return response.data.customers;
   } catch (error) {
     console.error("Error fetching all customers in api.js:", error);
@@ -129,19 +119,13 @@ export const getOrders = async (
   includeServices = false
 ) => {
   try {
-    // console.log("api.js: Calling getOrders with params:", {
-    //   page,
-    //   limit,
-    //   status,
-    //   includeServices,
-    // });
     const response = await axios.get(ORDER_API_BASE_URL, {
       params: { page, limit, status, includeServices },
       ...getAuthHeader(),
     });
 
     return {
-      data: response.data.data, // This is already correctly structured from backend
+      data: response.data.data,
       total: parseInt(response.headers["x-total-count"]) || 0,
       totalPages: response.data.pagination?.totalPages || 1,
     };
@@ -215,21 +199,21 @@ export const createService = async (serviceData) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error creating service in api.js:", error);
+    console.error("Error creating service:", error);
     throw error;
   }
 };
 
-export const updateService = async (id, serviceData) => {
+export const updateService = async (serviceId, serviceData) => {
   try {
     const response = await axios.put(
-      `${SERVICE_API_BASE_URL}/${id}`,
+      `${SERVICE_API_BASE_URL}/${serviceId}`,
       serviceData,
       getAuthHeader()
     );
     return response.data;
   } catch (error) {
-    console.error(`Error updating service with ID ${id} in api.js:`, error);
+    console.error(`Error updating service ${serviceId}:`, error);
     throw error;
   }
 };
@@ -247,7 +231,90 @@ export const deleteService = async (id) => {
   }
 };
 
-// Fetches all employees
+// Inventory API
+export const getAllInventoryItems = async () => {
+  try {
+    const response = await axios.get(INVENTORY_API_BASE_URL, getAuthHeader());
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching inventory items:", error);
+    throw error;
+  }
+};
+
+export const getItemTransactionHistory = async (itemId) => {
+  try {
+    const response = await axios.get(
+      `${INVENTORY_API_BASE_URL}/${itemId}/history`,
+      getAuthHeader()
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching history for item ${itemId}:`, error);
+    throw new Error(
+      error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Failed to fetch transaction history"
+    );
+  }
+};
+
+export const addInventoryItem = async (itemData) => {
+  try {
+    const response = await axios.post(
+      INVENTORY_API_BASE_URL,
+      itemData,
+      getAuthHeader()
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error adding inventory item:", error);
+    throw error;
+  }
+};
+
+export const updateStockTransaction = async (transactionData) => {
+  try {
+    const response = await axios.post(
+      `${INVENTORY_API_BASE_URL}/transaction`,
+      transactionData,
+      getAuthHeader()
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating stock transaction:", error);
+    throw error;
+  }
+};
+
+export const getServiceInventoryUsage = async (serviceId) => {
+  try {
+    const response = await axios.get(
+      `${SERVICE_API_BASE_URL}/${serviceId}/inventory`,
+      getAuthHeader()
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching inventory for service ${serviceId}:`, error);
+    throw error;
+  }
+};
+
+export const updateServiceInventory = async (serviceId, inventoryUsage) => {
+  try {
+    const response = await axios.put(
+      `${SERVICE_API_BASE_URL}/${serviceId}/inventory`,
+      { inventory_usage: inventoryUsage },
+      getAuthHeader()
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating inventory for service ${serviceId}:`, error);
+    throw error;
+  }
+};
+
+// Employee API
 export const getAllEmployees = async () => {
   const response = await axios.get(EMPLOYEE_API_BASE_URL, getAuthHeader());
   return response.data.data;
@@ -258,10 +325,16 @@ export const getAllOrdersForDashboard = async () => {
   return response.data;
 };
 
-export const getAllVehicles = async () => {
-  const response = await axios.get(
-    `${VEHICLE_API_BASE_URL}/all`,
-    getAuthHeader()
-  );
-  return response.data.data;
+export const getAllVehicles = async (search = "") => {
+  try {
+    
+    const response = await axios.get(`${VEHICLE_API_BASE_URL}/all`, {
+      params: { search }, // Pass the search term as a query parameter
+      ...getAuthHeader(),
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching all vehicles in api.js:", error);
+    throw error;
+  }
 };

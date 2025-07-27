@@ -238,6 +238,7 @@ class OrderService {
   /**
    * Creates a new order along with its associated order info and services.
    */
+  // Add to the createOrder method
   async createOrder(orderData) {
     const {
       customer_id,
@@ -251,27 +252,91 @@ class OrderService {
     try {
       await connection.beginTransaction();
 
+      // Create the order
       const [orderResult] = await connection.query(
         `INSERT INTO orders (customer_id, employee_id, vehicle_id, order_status) VALUES (?, ?, ?, ?)`,
-        [customer_id, employee_id, vehicle_id, "pending"] // New orders start as pending
+        [customer_id, employee_id, vehicle_id, "pending"]
       );
       const orderId = orderResult.insertId;
 
+      // Create order info
       await connection.query(
         `INSERT INTO order_info (order_id, order_additional_requests) VALUES (?, ?)`,
         [orderId, additional_requests || ""]
       );
 
-      if (services && Array.isArray(services) && services.length > 0) {
-        const serviceValues = services.map((service) => [
-          orderId,
-          service.service_id,
-          0, // New services start as not completed (0)
-        ]);
+      // Process services and inventory
+      if (services && services.length > 0) {
+        const serviceValues = [];
+        const inventoryTransactions = [];
+
+        for (const service of services) {
+          // Add service to order
+          serviceValues.push([
+            orderId,
+            service.service_id,
+            0, // service_completed starts as false
+          ]);
+
+          // Process inventory usage if any
+          if (service.inventory_usage && service.inventory_usage.length > 0) {
+            for (const usage of service.inventory_usage) {
+              // Check current stock
+              const [itemRows] = await connection.query(
+                `SELECT current_quantity FROM inventory_items WHERE item_id = ?`,
+                [usage.item_id]
+              );
+
+              if (itemRows.length === 0) {
+                throw new Error(`Item ${usage.item_id} not found`);
+              }
+
+              const currentQty = itemRows[0].current_quantity;
+              const newQty = currentQty - usage.quantity;
+
+              if (newQty < 0) {
+                throw new Error(
+                  `Insufficient stock for item ${usage.item_id}. Current: ${currentQty}, Required: ${usage.quantity}`
+                );
+              }
+
+              // Update inventory
+              await connection.query(
+                `UPDATE inventory_items SET current_quantity = ? WHERE item_id = ?`,
+                [newQty, usage.item_id]
+              );
+
+              // Record transaction
+              inventoryTransactions.push([
+                usage.item_id,
+                "outward",
+                usage.quantity,
+                employee_id,
+                customer_id,
+                orderId,
+                `Used for service ${service.service_id}`,
+                newQty,
+              ]);
+            }
+          }
+        }
+
+        // Insert services
         await connection.query(
           `INSERT INTO order_services (order_id, service_id, service_completed) VALUES ?`,
           [serviceValues]
         );
+
+        // Insert inventory transactions if any
+        if (inventoryTransactions.length > 0) {
+          await connection.query(
+            `INSERT INTO inventory_transactions (
+            item_id, transaction_type, quantity, employee_id,
+            customer_id, order_id, notes, resulting_quantity
+          ) VALUES ?`,
+            [inventoryTransactions]
+          );
+        }
       }
 
       await connection.commit();

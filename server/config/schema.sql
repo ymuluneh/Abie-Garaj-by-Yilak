@@ -143,6 +143,52 @@ INSERT INTO company_roles (company_role_id, company_role_name) VALUES
   
 ON DUPLICATE KEY UPDATE company_role_name = VALUES(company_role_name);
 
+-- Add to your database schema (after the existing tables)
 
 
 
+
+-- Inventory Tables
+CREATE TABLE IF NOT EXISTS `inventory_items` (
+  `item_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `item_name` VARCHAR(255) NOT NULL,
+  `item_description` TEXT,
+  `unit_of_measure` VARCHAR(50) NOT NULL,
+  `current_quantity` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `minimum_quantity` DECIMAL(10,2) DEFAULT 0,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`item_id`),
+  UNIQUE KEY `unique_item_name` (`item_name`)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS `inventory_transactions` (
+  `transaction_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `item_id` INT(11) NOT NULL,
+  `transaction_type` ENUM('inward', 'outward') NOT NULL,
+  `quantity` DECIMAL(10,2) NOT NULL,
+  `transaction_date` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `employee_id` INT(11) NOT NULL,
+  `customer_id` INT(11),
+  `order_id` INT(11),
+  `notes` TEXT,
+  `resulting_quantity` DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (`transaction_id`),
+  FOREIGN KEY (`item_id`) REFERENCES `inventory_items`(`item_id`),
+  FOREIGN KEY (`employee_id`) REFERENCES `employee`(`employee_id`),
+  FOREIGN KEY (`customer_id`) REFERENCES `customer_identifier`(`customer_id`),
+  FOREIGN KEY (`order_id`) REFERENCES `orders`(`order_id`)
+) ENGINE=InnoDB;
+
+-- Add service-inventory relationship table
+CREATE TABLE IF NOT EXISTS `service_inventory` (
+  `service_inventory_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `service_id` INT(11) NOT NULL,
+  `item_id` INT(11) NOT NULL,
+  `quantity_used` DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (`service_inventory_id`),
+  FOREIGN KEY (`service_id`) REFERENCES `common_services`(`service_id`),
+  FOREIGN KEY (`item_id`) REFERENCES `inventory_items`(`item_id`),
+  UNIQUE KEY `unique_service_item` (`service_id`, `item_id`)
+) ENGINE=InnoDB;

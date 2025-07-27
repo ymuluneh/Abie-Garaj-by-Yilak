@@ -26,6 +26,8 @@ exports.getVehicleById = async (req, res) => {
       vehicle_tag: vehicle.vehicle_tag,
       vehicle_serial_number: vehicle.vehicle_serial_number,
       vehicle_color: vehicle.vehicle_color,
+      // Include customer fields here if getVehicleById service also fetches them
+      // For now, assuming getVehicleById only returns vehicle info
     });
   } catch (error) {
     console.error("Error in getVehicleById:", error.message);
@@ -172,15 +174,18 @@ exports.getVehiclesByCustomerId = async (req, res) => {
  * GET /api/vehicle/all
  */
 exports.getAllVehicles = async (req, res) => {
-  // NEW CONTROLLER FUNCTION
   try {
-    const vehicles = await vehicleService.getAllVehicles();
+    const { search } = req.query; // Get search query parameter
+    const vehicles = await vehicleService.getAllVehicles(search); // Pass search to service
+
+    // FIX IS HERE: Send the 'vehicles' array directly, as it already contains customer data
+    // The .map() function below was stripping out the customer fields.
     res.json({
       success: true,
-      data: vehicles,
+      data: vehicles, // <--- CHANGE THIS LINE: Send the data directly from the service
     });
   } catch (error) {
-    console.error("Error in getAllVehicles:", error.message);
+    console.error("Error in getAllVehicles controller:", error.message);
     res.status(500).json({ error: "Failed to fetch all vehicles" });
   }
 };

@@ -65,10 +65,26 @@ const OrderDetail = ({ isAdmin }) => {
     try {
       const response = await getOrderById(id);
       if (response.data) {
-        setOrder(response.data);
+        const orderData = response.data;
+
+        // --- START MODIFICATION ---
+        // Calculate estimated completion date if it's not already present
+        if (
+          !orderData.order_estimated_completion_date &&
+          orderData.order_date
+        ) {
+          const orderDate = new Date(orderData.order_date);
+          const estimatedDate = new Date(orderDate);
+          estimatedDate.setDate(orderDate.getDate() + 7); // Add 7 days
+          orderData.order_estimated_completion_date =
+            estimatedDate.toISOString(); // Store as ISO string
+        }
+        // --- END MODIFICATION ---
+
+        setOrder(orderData);
         // Ensure `service_completed` is a boolean and `service_status` exists for individual service display
         setServices(
-          response.data.services.map((service) => ({
+          orderData.services.map((service) => ({
             ...service,
             completed: Boolean(service.service_completed),
             // Use service_completed to determine individual service display status
@@ -283,8 +299,6 @@ const OrderDetail = ({ isAdmin }) => {
             <p>No services associated with this order.</p>
           )}
         </div>
-
-        
       </div>
 
       {/* Action Buttons - at the bottom */}
@@ -515,7 +529,7 @@ const OrderDetail = ({ isAdmin }) => {
             color="primary"
             startIcon={<PrintIcon />}
           >
-            
+            Print
           </Button>
         </DialogActions>
       </Dialog>

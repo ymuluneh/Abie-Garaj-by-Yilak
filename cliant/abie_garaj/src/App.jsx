@@ -34,6 +34,9 @@ import AdminDashboard from "./markup/pages/admin/AdminDashbord/AdminDashboard";
 import CreatOrder from "./markup/pages/admin/orders/CreatOrder";
 import EditEmployee from "./markup/pages/admin/EditEmployee";
 import Services from "./markup/pages/admin/ServiceManagement/services";
+import AllMaterialsList from "./markup/pages/admin/InventoryManagment/AllMaterialsList";
+import ItemTransactions from "./markup/pages/admin/InventoryManagment/ItemTransactions";
+import VehicleList from "./markup/components/Admin/vehiclList";
 
 function App() {
   return (
@@ -52,6 +55,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/admin/employees/edit/:id"
+          element={
+            <ProtectedRoute roles={[1]}>
+              <EditEmployee />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/admin/add-customer"
@@ -62,22 +73,94 @@ function App() {
           }
         />
 
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/employees/edit/:id" element={<EditEmployee />} />
-        <Route path="/admin/services" element={<Services />} />
-        <Route path="/admin/orders" element={<OrderList />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute roles={[1]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/services"
+          element={
+            <ProtectedRoute roles={[1]}>
+              <Services />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/orders"
+          element={
+            <ProtectedRoute roles={[1]}>
+              <OrderList />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="/admin/orders/:id/edit" element={<OrderEdit />} />
-        <Route path="/admin/order" element={<CreatOrder />} />
-        <Route path="/admin/orders/:id" element={<OrderDetail />} />
-        <Route path="/add-vehicle" element={<Vehicle />} />
-        <Route path="/admin/customers" element={<CustomersPage />} />
-        <Route path="/admin/customer/:id" element={<CostomerProfil />} />
-        <Route path="/admin/customer/edit/:id" element={<EditCustomer />} />
+
+        <Route
+          path="/admin/order"
+          element={
+            <ProtectedRoute roles={[1]}>
+              <CreatOrder />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/employees"
+          element={
+            <ProtectedRoute roles={[1]}>
+              <Employees />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/add-vehicle"
+          element={
+            <ProtectedRoute roles={[1]}>
+              <Vehicle />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/customers"
+          element={
+            <ProtectedRoute roles={[1]}>
+              <CustomersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/customer/:id"
+          element={
+            <ProtectedRoute roles={[1]}>
+              <CostomerProfil />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/customer/edit/:id"
+          element={
+            <ProtectedRoute roles={[1]}>
+              <EditCustomer />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/admin/vehicles" element={<VehicleList />} />
+        <Route path="/admin/inventory" element={<AllMaterialsList />} />
+        <Route
+          path="/admin/inventory/item/:itemId"
+          element={<ItemTransactions />}
+        />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
         <Route path="/services" element={<Service />} />
         <Route path="/Unauthorized" element={<Unauthorized />} />
-        <Route path="/admin/employees" element={<Employees />} />
+        <Route path="/admin/orders/:id" element={<OrderDetail />} />
       </Routes>
       <Footer />
     </>

@@ -2,19 +2,19 @@ const nodemailer = require("nodemailer");
 
 // Create transporter
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // true for 465, false for other ports
-  requireTLS: true,
+  service: "gmail", // Use service name instead of host/port
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
   },
-  connectionTimeout: 10000, // 10 seconds
-  socketTimeout: 10000, // 10 seconds
+  secure: true, // Always use TLS
   tls: {
-    rejectUnauthorized: false, // Only for testing, remove in production
+    rejectUnauthorized: true, // Important for production
   },
+  // Connection pool settings
+  pool: true,
+  maxConnections: 5,
+  maxMessages: 100,
 });
 
 // Test transporter connection
