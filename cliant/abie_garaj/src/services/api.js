@@ -1,12 +1,24 @@
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 // Base URLs
-const CUSTOMER_API_BASE_URL = "http://localhost:3000/api/customer";
-const VEHICLE_API_BASE_URL = "http://localhost:3000/api/vehicle";
-const ORDER_API_BASE_URL = "http://localhost:3000/api/order";
-const SERVICE_API_BASE_URL = "http://localhost:3000/api/services";
-const EMPLOYEE_API_BASE_URL = "http://localhost:3000/api/employees";
-const INVENTORY_API_BASE_URL = "http://localhost:3000/api/inventory";
+const CUSTOMER_API_BASE_URL = `${API_BASE_URL}/api/customer`;
+const VEHICLE_API_BASE_URL = `${API_BASE_URL}/api/vehicle`;
+const ORDER_API_BASE_URL = `${API_BASE_URL}/api/order`;
+const SERVICE_API_BASE_URL = `${API_BASE_URL}/api/services`;
+const EMPLOYEE_API_BASE_URL = `${API_BASE_URL}/api/employees`;
+const INVENTORY_API_BASE_URL = `${API_BASE_URL}/api/inventory`;
+
+// Rest of your file remains the same...
+
+// Base URLs
+// const CUSTOMER_API_BASE_URL = "https://abieback.yilakmuluneh.com/api/customer";
+// const VEHICLE_API_BASE_URL = "https://abieback.yilakmuluneh.com/api/vehicle";
+// const ORDER_API_BASE_URL = "https://abieback.yilakmuluneh.com/api/order";
+// const SERVICE_API_BASE_URL = "https://abieback.yilakmuluneh.com/api/services";
+// const EMPLOYEE_API_BASE_URL = "https://abieback.yilakmuluneh.com/api/employees";
+// const INVENTORY_API_BASE_URL = "https://abieback.yilakmuluneh.com/api/inventory";
 
 // Helper function to get the authorization header
 const getAuthHeader = () => {
@@ -329,7 +341,7 @@ export const getAllVehicles = async (search = "") => {
   try {
     
     const response = await axios.get(`${VEHICLE_API_BASE_URL}/all`, {
-      params: { search }, // Pass the search term as a query parameter
+      params: { search }, 
       ...getAuthHeader(),
     });
     return response.data.data;

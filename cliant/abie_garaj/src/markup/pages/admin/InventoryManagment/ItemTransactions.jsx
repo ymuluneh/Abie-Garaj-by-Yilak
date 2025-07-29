@@ -11,6 +11,7 @@ const ItemTransactions = () => {
   const { itemId } = useParams();
   const [itemDetails, setItemDetails] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  const [filteredTransactions, setFilteredTransactions] = useState([]); // New state for filtered transactions
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showAddStockForm, setShowAddStockForm] = useState(false);
@@ -19,6 +20,7 @@ const ItemTransactions = () => {
     quantity: "",
     notes: "",
   });
+  const [searchTerm, setSearchTerm] = useState(""); // New state for search term
 
   useEffect(() => {
     const fetchItemDetails = async () => {
@@ -35,6 +37,7 @@ const ItemTransactions = () => {
 
         setItemDetails(item);
         setTransactions(history);
+        setFilteredTransactions(history); // Initialize filtered transactions with all transactions
       } catch (err) {
         setError(err.message || "Failed to load item details");
         console.error(err);
@@ -45,9 +48,36 @@ const ItemTransactions = () => {
     fetchItemDetails();
   }, [itemId]);
 
+  // Effect to filter transactions when searchTerm or transactions change
+  useEffect(() => {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    const newFilteredTransactions = transactions.filter((tx) => {
+      return (
+        new Date(tx.transaction_date)
+          .toLocaleString()
+          .toLowerCase()
+          .includes(lowerCaseSearchTerm) ||
+        tx.transaction_type.toLowerCase().includes(lowerCaseSearchTerm) ||
+        tx.quantity.toString().includes(lowerCaseSearchTerm) ||
+        tx.resulting_quantity.toString().includes(lowerCaseSearchTerm) ||
+        (tx.employee_name &&
+          tx.employee_name.toLowerCase().includes(lowerCaseSearchTerm)) ||
+        (tx.customer_name &&
+          tx.customer_name.toLowerCase().includes(lowerCaseSearchTerm)) ||
+        (tx.order_id && tx.order_id.toString().includes(lowerCaseSearchTerm)) ||
+        (tx.notes && tx.notes.toLowerCase().includes(lowerCaseSearchTerm))
+      );
+    });
+    setFilteredTransactions(newFilteredTransactions);
+  }, [searchTerm, transactions]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
   };
 
   const handleSubmit = async (e) => {
@@ -68,7 +98,7 @@ const ItemTransactions = () => {
         getAllInventoryItems(),
       ]);
       setItemDetails(items.find((i) => i.item_id === parseInt(itemId)));
-      setTransactions(history);
+      setTransactions(history); // Update original transactions state
       setShowAddStockForm(false);
       setFormData({
         transaction_type: "inward",
@@ -224,8 +254,18 @@ const ItemTransactions = () => {
         <div className={styles.sectionHeader}>
           <h2>Transaction History</h2>
           <div className={styles.tableControls}>
+            {/* Search Input */}
+            <div className={styles.searchContainer}>
+              <input
+                type="text"
+                placeholder="Search transactions..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className={styles.searchInput}
+              />
+            </div>
             <span className={styles.totalTransactions}>
-              Total: {transactions.length} records
+              Total: {filteredTransactions.length} records
             </span>
           </div>
         </div>
@@ -245,8 +285,8 @@ const ItemTransactions = () => {
               </tr>
             </thead>
             <tbody>
-              {transactions.length > 0 ? (
-                transactions.map((tx) => (
+              {filteredTransactions.length > 0 ? (
+                filteredTransactions.map((tx) => (
                   <tr key={tx.transaction_id} className={styles.tableRow}>
                     <td className={styles.dateCell}>
                       {new Date(tx.transaction_date).toLocaleString()}
@@ -299,7 +339,7 @@ const ItemTransactions = () => {
               ) : (
                 <tr className={styles.emptyRow}>
                   <td colSpan="8" className={styles.emptyCell}>
-                    No transaction history found
+                    No transaction history found for the current search.
                   </td>
                 </tr>
               )}

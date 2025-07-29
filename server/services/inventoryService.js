@@ -1,4 +1,3 @@
-// inventoryService.js
 const { pool } = require("../config/config");
 
 exports.getAllInventoryItems = async () => {
@@ -6,10 +5,11 @@ exports.getAllInventoryItems = async () => {
     SELECT
       item_id,
       item_name,
-      item_description, -- Add this line to include the description
+      item_description, 
       unit_of_measure,
       current_quantity,
       minimum_quantity,
+      item_price,
       CASE
         WHEN current_quantity <= minimum_quantity THEN 'Low Stock'
         WHEN current_quantity = 0 THEN 'Out of Stock'
@@ -30,12 +30,10 @@ exports.getItemTransactionHistory = async (itemId) => {
       it.transaction_type,
       it.quantity,
       it.resulting_quantity,
-      -- Join customer_info to get customer's first and last names, then concatenate
       COALESCE(CONCAT(ci.customer_first_name, ' ', ci.customer_last_name), 'N/A') AS customer_name,
-      it.customer_id, -- Keep customer_id for linking in the frontend
-      -- Join employee_info to get employee's first and last names, then concatenate
+      it.customer_id,
       COALESCE(CONCAT(ei.employee_first_name, ' ', ei.employee_last_name), 'System') AS employee_name,
-      it.employee_id, -- Keep employee_id for any future linking
+      it.employee_id,
       it.order_id,
       it.notes
     FROM inventory_transactions it
@@ -55,11 +53,13 @@ exports.addInventoryItem = async ({
   unit_of_measure,
   current_quantity,
   minimum_quantity,
+  item_price,
 }) => {
   const [result] = await pool.query(
     `
-    INSERT INTO inventory_items (item_name, item_description, unit_of_measure, current_quantity, minimum_quantity)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO inventory_items 
+      (item_name, item_description, unit_of_measure, current_quantity, minimum_quantity, item_price)
+    VALUES (?, ?, ?, ?, ?, ?)
   `,
     [
       item_name,
@@ -67,10 +67,13 @@ exports.addInventoryItem = async ({
       unit_of_measure,
       current_quantity,
       minimum_quantity,
+      item_price,
     ]
   );
   return { item_id: result.insertId };
-};exports.updateStockTransaction = async ({
+};
+
+exports.updateStockTransaction = async ({
   item_id,
   transaction_type,
   quantity,
@@ -83,17 +86,6 @@ exports.addInventoryItem = async ({
   try {
     await conn.beginTransaction();
 
-    // Log incoming data for debugging
-    console.log("Incoming transaction data:", {
-      item_id,
-      transaction_type,
-      quantity,
-      employee_id,
-      customer_id,
-      order_id,
-      notes,
-    });
-
     const [itemRow] = await conn.query(
       `SELECT current_quantity FROM inventory_items WHERE item_id = ?`,
       [item_id]
@@ -104,12 +96,9 @@ exports.addInventoryItem = async ({
       throw new Error("Item not found");
     }
 
-    // FIX IS HERE: Ensure currentQty is treated as a number
-    let currentQty = parseFloat(itemRow[0].current_quantity); // <--- Add parseFloat here
-    console.log(`Current quantity for item ${item_id}: ${currentQty}`);
-
-    // Ensure quantity is a number
+    let currentQty = parseFloat(itemRow[0].current_quantity);
     const parsedQuantity = parseFloat(quantity);
+
     if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
       console.error(`Error: Invalid quantity provided: ${quantity}`);
       throw new Error("Invalid quantity provided. Must be a positive number.");
@@ -117,10 +106,8 @@ exports.addInventoryItem = async ({
 
     let newQty =
       transaction_type === "inward"
-        ? currentQty + parsedQuantity // Now both are numbers, so addition will occur
+        ? currentQty + parsedQuantity
         : currentQty - parsedQuantity;
-
-    console.log(`Calculated new quantity: ${newQty}`); // This should now show a correct sum/difference
 
     if (newQty < 0) {
       console.error(
@@ -131,18 +118,17 @@ exports.addInventoryItem = async ({
 
     await conn.query(
       `UPDATE inventory_items SET current_quantity = ? WHERE item_id = ?`,
-      [newQty, item_id] // Pass newQty as a number; MySQL will handle the conversion
+      [newQty, item_id]
     );
-    console.log(`Updated inventory_items for item ${item_id} to ${newQty}`);
 
     await conn.query(
       `
-            INSERT INTO inventory_transactions (
-                item_id, transaction_type, quantity, employee_id,
-                customer_id, order_id, notes, resulting_quantity
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `,
+      INSERT INTO inventory_transactions (
+        item_id, transaction_type, quantity, employee_id,
+        customer_id, order_id, notes, resulting_quantity
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `,
       [
         item_id,
         transaction_type,
@@ -151,14 +137,11 @@ exports.addInventoryItem = async ({
         customer_id,
         order_id,
         notes,
-        newQty, // Pass newQty as a number
+        newQty,
       ]
     );
-    console.log(`Inserted transaction for item ${item_id}`);
 
     await conn.commit();
-    console.log("Transaction committed successfully.");
-
     return {
       message: "Stock updated successfully",
       resulting_quantity: newQty,

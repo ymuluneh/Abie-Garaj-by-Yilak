@@ -82,7 +82,7 @@ async function sendOrderCompletionEmail(
   completionDate
 ) {
   try {
-    const orderLink = `http://localhost:5173/admin/orders/${orderId}`;
+    const orderLink = `http://abiegarag.front.yilakmuluneh.com/admin/orders/${orderId}`;
 
     const emailHtml = createOrderCompletionTemplate({
       customerName,

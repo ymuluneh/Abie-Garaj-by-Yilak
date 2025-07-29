@@ -154,3 +154,117 @@
   margin-right: 10px;
   font-size: 1.2rem;
 }
+
+.priceColumn {
+  width: 100px;
+  text-align: right;
+}
+
+.priceCell {
+  text-align: right;
+  font-weight: 500;
+}
+
+.priceBreakdown {
+  font-size: 0.8em;
+  color: #666;
+  display: block;
+}
+
+.materialsUsed div {
+  margin-top: 4px;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.materialsUsed strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* common.module.css */
+
+/* ... existing styles ... */
+
+.tableControls {
+  display: flex;
+  justify-content: space-between; /* Pushes search bar to one side, total records to the other */
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap; /* Allows wrapping on smaller screens */
+  gap: 15px; /* Space between the search bar and total records */
+}
+
+.searchBar {
+  display: flex; /* Makes input and button align side-by-side */
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden; /* Ensures borders are contained */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  width: 400px; /* Adjust width as needed */
+  max-width: 100%; /* Ensures it doesn't overflow on small screens */
+}
+
+.searchInput {
+  flex-grow: 1; /* Allows the input to take up available space */
+  padding: 10px 15px;
+  border: none; /* Remove individual input border */
+  font-size: 1rem;
+  outline: none; /* Remove outline on focus */
+  background-color: #fcfcfc;
+}
+
+.searchInput::placeholder {
+  color: #a0a0a0;
+}
+
+.searchInput:focus {
+  background-color: #ffffff;
+}
+
+.searchButton {
+  background-color: #007bff; /* Primary brand color */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  border-left: 1px solid #0056b3; /* Slightly darker border for separation */
+  flex-shrink: 0; /* Prevents button from shrinking */
+}
+
+.searchButton:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+}
+
+.searchButton:active {
+  transform: translateY(1px); /* Slight press effect */
+}
+
+.totalTransactions {
+  font-size: 0.95em;
+  color: #555;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  white-space: nowrap; /* Prevent "Total: X records" from wrapping */
+}
+
+
+.searchInput {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  width: 300px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}

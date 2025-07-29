@@ -1,6 +1,7 @@
 import React from "react";
 import styles from "./BookNow.module.css";
-import { FaPhoneAlt } from "react-icons/fa"; // Phone icon
+import { FaPhoneAlt } from "react-icons/fa"; 
+import { Link } from "react-router";
 
 const BookNow = () => {
   return (
@@ -13,7 +14,7 @@ const BookNow = () => {
         </div>
         <button className={`${styles.bookNowBtn} btn`}>
           {" "}
-          <a href="/admin/order">Book Now</a>
+          <Link to="/admin/order">Book Now</Link>
         </button>
       </div>
     </section>

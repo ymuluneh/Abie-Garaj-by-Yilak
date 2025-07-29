@@ -45,6 +45,7 @@ const ServiceManagement = () => {
     item_description: "",
     unit_of_measure: "pieces",
     quantity: 0,
+    price: 0.0,
   });
   const [editingServiceId, setEditingServiceId] = useState(null);
   const [snackbar, setSnackbar] = useState({
@@ -104,6 +105,7 @@ const ServiceManagement = () => {
         unit_of_measure: newInventoryItem.unit_of_measure,
         current_quantity: parseFloat(newInventoryItem.quantity) || 0,
         minimum_quantity: 0,
+        item_price: parseFloat(newInventoryItem.price) || 0,
       });
       const inventoryData = await getAllInventoryItems();
       setInventoryItems(inventoryData);
@@ -112,6 +114,7 @@ const ServiceManagement = () => {
         item_description: "",
         unit_of_measure: "pieces",
         quantity: 0,
+        price: 0.0,
       });
       setShowInventoryForm(false);
       setSnackbar({
@@ -264,13 +267,13 @@ const ServiceManagement = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Services We Provide
+        Services We Provide and Inventory Management
       </Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        Manage the list of services offered by your garage.
+        Manage the list of services offered by our garage and keep track of inventory.
       </Typography>
 
-      {/* Inventory Item Form - At the top */}
+      {/* Inventory Item Form */}
       <Box sx={{ mb: 4 }}>
         <Button
           variant="contained"
@@ -339,6 +342,20 @@ const ServiceManagement = () => {
                   variant="outlined"
                   size="small"
                   inputProps={{ step: "0.01", min: "0" }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Price"
+                  name="price"
+                  type="number"
+                  value={newInventoryItem.price}
+                  onChange={handleInventoryItemChange}
+                  variant="outlined"
+                  size="small"
+                  inputProps={{ step: "0.01", min: "0" }}
+                  required
                 />
               </Grid>
               <Grid item xs={12}>
@@ -427,7 +444,7 @@ const ServiceManagement = () => {
         )}
       </Box>
 
-      {/* Service Form - Hidden until clicked */}
+      {/* Service Form */}
       <Button
         variant="contained"
         onClick={() => {

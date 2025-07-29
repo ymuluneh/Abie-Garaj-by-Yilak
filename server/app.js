@@ -11,9 +11,21 @@ const app = express();
 
 // 🔹 Middlewares
 //cors allow cross-origin requests only from specfice origin
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  process.env.FRONTEND_URL,
+];
+
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:5173"],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked: ${origin} not allowed`));
+      }
+    },
     credentials: true,
   })
 );
@@ -22,14 +34,22 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 🔹 Initialize database schema
-createSchema(); //* Run schema.sql to create DB + tables
+// createSchema(); //* Run schema.sql to create DB + tables
 
 // 🔹 Use routes
 app.use("/api", Routes);
 
 // 🔹 Test DB connection
-app.get("/test", (req,res)=>{
-  req.send("backend connected sucssusfully")
+app.get("/test", async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+    await connection.query("SELECT 1 + 1 AS solution");
+    connection.release();
+    res.status(200).json({ message: "Database connection successful!" });
+  } catch (error) {
+    console.error("Database connection error:", error);
+    res.status(500).json({ error: "Database connection failed." });
+  }
 });
 
 

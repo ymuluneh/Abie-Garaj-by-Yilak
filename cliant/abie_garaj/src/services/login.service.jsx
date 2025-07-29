@@ -1,11 +1,14 @@
 const loginService = async (formData) => {
   try {
     const api_url = import.meta.env.VITE_API_URL;
-    const response = await fetch(`${api_url}/api/employee/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
+    const response = await fetch(
+      `${api_url}/api/employee/login`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      }
+    );
 
     const data = await response.json();
 

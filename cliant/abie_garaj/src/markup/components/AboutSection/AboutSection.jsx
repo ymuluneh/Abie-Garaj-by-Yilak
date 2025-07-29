@@ -1,8 +1,7 @@
 import React from "react";
 import styles from "./AboutSection.module.css";
 import aboutImage1 from "../../../assets/images/vban1.jpg"; // First image
-import aboutImage2 from "../../../assets/images/vban2.jpg"; // Second image
-
+import aboutImage2 from "../../../assets/images/vban2.jpg"; 
 const AboutSection = () => {
   return (
     <section className={styles.aboutSection}>

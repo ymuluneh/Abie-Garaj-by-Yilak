@@ -1,7 +1,6 @@
-// src/markup/components/OrderList/OrderDetail.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getOrderById } from "../../../services/api";
+import { getOrderById, getAllInventoryItems } from "../../../services/api";
 import styles from "./OrderDetail.module.css";
 import PropTypes from "prop-types";
 
@@ -30,12 +29,13 @@ const OrderDetail = ({ isAdmin }) => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [services, setServices] = useState([]); // State to hold services for display
+  const [services, setServices] = useState([]);
+  const [inventoryItems, setInventoryItems] = useState([]);
 
   // State and refs for Material-UI Dialog for receipt
   const [receiptOpen, setReceiptOpen] = useState(false);
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("md")); // For responsive dialog
+  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
 
   // Map status to display names for better readability on main page
   const displayStatus = (statusKey) => {
@@ -50,13 +50,14 @@ const OrderDetail = ({ isAdmin }) => {
   // Map status to colors for badges on main page
   const statusColors = {
     pending: "#ffc107", // Amber/Orange
-    in_progress: "#007bff", // Blue (though we'll derive to pending/completed)
+    in_progress: "#007bff", // Blue (will often resolve to pending/completed)
     completed: "#28a745", // Green
-    cancelled: "#dc3545", // Red (will be manually set by admin)
+    cancelled: "#dc3545", // Red
   };
 
   useEffect(() => {
     fetchOrder();
+    fetchInventory();
   }, [id]);
 
   const fetchOrder = async () => {
@@ -67,7 +68,6 @@ const OrderDetail = ({ isAdmin }) => {
       if (response.data) {
         const orderData = response.data;
 
-        // --- START MODIFICATION ---
         // Calculate estimated completion date if it's not already present
         if (
           !orderData.order_estimated_completion_date &&
@@ -79,18 +79,26 @@ const OrderDetail = ({ isAdmin }) => {
           orderData.order_estimated_completion_date =
             estimatedDate.toISOString(); // Store as ISO string
         }
-        // --- END MODIFICATION ---
 
         setOrder(orderData);
-        // Ensure `service_completed` is a boolean and `service_status` exists for individual service display
+        // Process services to include completion status and a map for inventory usage
         setServices(
           orderData.services.map((service) => ({
             ...service,
             completed: Boolean(service.service_completed),
-            // Use service_completed to determine individual service display status
             service_status: Boolean(service.service_completed)
               ? "completed"
               : "pending",
+            // Convert inventory_usage array to an object for easy lookup by item_id
+            inventory_usage_map: (service.inventory_usage || []).reduce(
+              (acc, usage) => {
+                if (usage.item_id && typeof usage.quantity !== "undefined") {
+                  acc[String(usage.item_id)] = usage.quantity; // Ensure item_id is a string key
+                }
+                return acc;
+              },
+              {}
+            ),
           }))
         );
       } else {
@@ -106,10 +114,19 @@ const OrderDetail = ({ isAdmin }) => {
     }
   };
 
-  // Overall order status derived from individual service statuses, as per requirement
+  const fetchInventory = async () => {
+    try {
+      const items = await getAllInventoryItems();
+      setInventoryItems(items);
+    } catch (err) {
+      console.error("Failed to load inventory items for receipt:", err);
+    }
+  };
+
+  // Overall order status derived from individual service statuses
   const derivedOverallOrderStatus = useMemo(() => {
     if (!services || services.length === 0) {
-      return "Pending"; // If no services, consider it pending
+      return "Pending";
     }
     const allServicesCompleted = services.every((service) => service.completed);
     // If the backend has explicitly set 'cancelled', prioritize that display
@@ -117,14 +134,35 @@ const OrderDetail = ({ isAdmin }) => {
       return "Cancelled";
     }
     return allServicesCompleted ? "Completed" : "Pending";
-  }, [services, order]); // Depend on services and the order object itself for cancelled status
+  }, [services, order]);
 
-  // Calculate subtotal, tax, and total for receipt (using service_price from fetched services)
+  // Calculate subtotal, tax, and total for receipt
   const receiptCalculations = useMemo(() => {
-    const subtotal = services.reduce(
-      (sum, service) => sum + parseFloat(service?.service_price || 0),
-      0
-    );
+    let serviceCostTotal = 0;
+    let materialsCostTotal = 0;
+
+    services.forEach((service) => {
+      // Add the base service price for each service in the order
+      serviceCostTotal += parseFloat(service?.service_price || 0);
+
+      // Calculate material costs for this service based on inventory_usage_map
+      const inventoryUsageMap = service.inventory_usage_map || {};
+
+      Object.entries(inventoryUsageMap).forEach(([itemId, quantity]) => {
+        const item = inventoryItems.find(
+          (invItem) => String(invItem.item_id) === String(itemId) // Ensure string comparison
+        );
+
+        if (item) {
+          const itemPrice = parseFloat(item.item_price || 0);
+          const quantityUsed = parseFloat(quantity || 0);
+          const materialCost = itemPrice * quantityUsed;
+          materialsCostTotal += materialCost;
+        }
+      });
+    });
+
+    const subtotal = serviceCostTotal + materialsCostTotal;
     const taxRate = 0.1; // 10% tax rate
     const tax = subtotal * taxRate;
     const total = subtotal + tax;
@@ -133,8 +171,10 @@ const OrderDetail = ({ isAdmin }) => {
       subtotal: subtotal.toFixed(2),
       tax: tax.toFixed(2),
       total: total.toFixed(2),
+      serviceCostTotal: serviceCostTotal.toFixed(2), // For breakdown display
+      materialsCostTotal: materialsCostTotal.toFixed(2), // For breakdown display
     };
-  }, [services]);
+  }, [services, inventoryItems]); // Depend on services AND inventoryItems
 
   // Handlers for Receipt Dialog
   const handlePrintReceipt = () => {
@@ -417,26 +457,70 @@ const OrderDetail = ({ isAdmin }) => {
               {services.length > 0 ? (
                 services.map((service, index) => (
                   <Box
-                    key={service.service_id}
+                    key={service.order_service_id}
                     sx={{
                       display: "flex",
-                      justifyContent: "space-between",
+                      flexDirection: "column",
                       marginBottom: 1,
                       paddingBottom: 1,
                       borderBottom: "1px dotted #eee",
                     }}
                   >
-                    <Box sx={{ flexGrow: 1, pr: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        width: "100%",
+                      }}
+                    >
                       <Typography fontWeight="medium">
                         {index + 1}. {service.service_name}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {service.service_description || "No description"}
+                      <Typography fontWeight="bold">
+                        ${parseFloat(service.service_price || 0).toFixed(2)}
                       </Typography>
                     </Box>
-                    <Typography fontWeight="bold">
-                      ${parseFloat(service.service_price || 0).toFixed(2)}
+                    <Typography variant="body2" color="text.secondary">
+                      {service.service_description || "No description"}
                     </Typography>
+
+                    {/* Display materials used for this service */}
+                    {service.inventory_usage_map &&
+                      Object.keys(service.inventory_usage_map).length > 0 && (
+                        <Box sx={{ ml: 2, mt: 1 }}>
+                          <Typography variant="body2" fontStyle="italic">
+                            Materials:
+                          </Typography>
+                          {Object.entries(service.inventory_usage_map).map(
+                            ([itemId, quantity], idx) => {
+                              const item = inventoryItems.find(
+                                (i) => String(i.item_id) === String(itemId)
+                              );
+                              if (item && parseFloat(quantity) > 0) {
+                                return (
+                                  <Typography
+                                    key={idx}
+                                    variant="body2"
+                                    sx={{ ml: 1 }}
+                                  >
+                                    - {item.item_name} (x
+                                    {parseFloat(quantity) || 0}) @ $
+                                    {parseFloat(item.item_price || 0).toFixed(
+                                      2
+                                    )}{" "}
+                                    ={" "}
+                                    {(
+                                      parseFloat(item.item_price || 0) *
+                                      (parseFloat(quantity) || 0)
+                                    ).toFixed(2)}
+                                  </Typography>
+                                );
+                              }
+                              return null;
+                            }
+                          )}
+                        </Box>
+                      )}
                   </Box>
                 ))
               ) : (
@@ -444,14 +528,14 @@ const OrderDetail = ({ isAdmin }) => {
               )}
             </Box>
 
-            {order.order_additional_requests && (
+            {/* {order.order_additional_requests && (
               <Box sx={{ marginTop: 3 }}>
                 <Typography variant="h6" sx={{ marginBottom: 1 }}>
                   Additional Requests
                 </Typography>
                 <Typography>{order.order_additional_requests}</Typography>
               </Box>
-            )}
+            )} */}
 
             <Divider sx={{ marginY: 3 }} />
 
@@ -470,9 +554,39 @@ const OrderDetail = ({ isAdmin }) => {
                   mb: 1,
                 }}
               >
-                <Typography>Sub Total:</Typography>
+                <Typography>Services Subtotal:</Typography>
                 <Typography fontWeight="bold">
-                  ${receiptCalculations.subtotal}
+                  ${receiptCalculations.serviceCostTotal}
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  width: "250px",
+                  mb: 1,
+                }}
+              >
+                <Typography>Materials Subtotal:</Typography>
+                <Typography fontWeight="bold">
+                  ${receiptCalculations.materialsCostTotal}
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  width: "250px",
+                  mb: 1,
+                }}
+              >
+                <Typography>Total Before Tax:</Typography>
+                <Typography fontWeight="bold">
+                  $
+                  {(
+                    parseFloat(receiptCalculations.serviceCostTotal) +
+                    parseFloat(receiptCalculations.materialsCostTotal)
+                  ).toFixed(2)}
                 </Typography>
               </Box>
               <Box
@@ -486,7 +600,7 @@ const OrderDetail = ({ isAdmin }) => {
                 <Typography>
                   Tax (
                   {(
-                    (receiptCalculations.tax /
+                    (parseFloat(receiptCalculations.tax) /
                       (parseFloat(receiptCalculations.subtotal) || 1)) *
                     100
                   ).toFixed(0)}
@@ -542,7 +656,6 @@ OrderDetail.propTypes = {
   isAdmin: PropTypes.bool,
 };
 
-// Default prop for isAdmin if not provided, for public view
 OrderDetail.defaultProps = {
   isAdmin: false,
 };

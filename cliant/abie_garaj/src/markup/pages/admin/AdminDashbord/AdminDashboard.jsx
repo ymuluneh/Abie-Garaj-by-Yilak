@@ -132,7 +132,7 @@ const AdminDashboard = () => {
         });
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
-        setError("Failed to load dashboard data. Please try again.");
+        setError("you are not authorized to view this page.");
         toast.error("Failed to load dashboard data!");
       } finally {
         setLoading(false);
@@ -170,11 +170,7 @@ const AdminDashboard = () => {
           <div className={styles.adminMenuTitle}>ADMIN MENU</div>
           <nav className={styles.sidebarNav}>
             <ul>
-              {/* <SidebarLink
-                to="/admin"
-                icon={<Home />}
-                text="Dashboard"
-              /> */}
+          
               <SidebarCategory title="ORDERS" />
               <SidebarLink
                 to="/admin/orders"

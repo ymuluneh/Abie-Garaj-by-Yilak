@@ -33,6 +33,10 @@ function Header(props) {
                   Monday - Saturday 7:00AM - 6:00PM
                 </div>
               </div>
+
+              <div className="phone-number">
+                <Link to="/admin">Dashboard</Link>
+              </div>
               <div className="right-column">
                 {isLogged ? (
                   <div className="link-btn">
@@ -54,15 +58,15 @@ function Header(props) {
             <div className="inner-container">
               <div className="logo-box">
                 <div className="logo">
-                  <a href="/">
+                  <Link to="/">
                     <img src={logo} alt="" />
-                  </a>
+                  </Link>
                 </div>
               </div>
               <div className="right-column">
                 <div className="nav-outer">
                   <div className="mobile-nav-toggler">
-                    <img src="assets/images/icons/icon-bar.png" alt="" />
+                    {/* <img src="assets/images/icons/icon-bar.png" alt="" /> */}
                   </div>
                   <nav className="main-menu navbar-expand-md navbar-light">
                     <div
@@ -71,16 +75,16 @@ function Header(props) {
                     >
                       <ul className="navigation">
                         <li className="dropdown">
-                          <a href="/">Home</a>
+                          <Link to="/">Home</Link>
                         </li>
                         <li className="dropdown">
-                          <a href="/about">About Us</a>
+                          <Link to="/about">About Us</Link>
                         </li>
                         <li className="dropdown">
-                          <a href="/services">Services</a>
+                          <Link to="/services">Services</Link>
                         </li>
                         <li>
-                          <a href="/contact">Contact Us</a>
+                          <Link to="/contact">Contact Us</Link>
                         </li>
                       </ul>
                     </div>
@@ -114,24 +118,24 @@ function Header(props) {
               <div className="inner-container">
                 <div className="logo-box">
                   <div className="logo">
-                    <a href="/">
-                      <img src="assets/images/custom/logo.png" alt="" />
-                    </a>
+                    <Link to="/">
+                      {/* <img src="assets/images/custom/logo.png" alt="" /> */}
+                    </Link>
                   </div>
                 </div>
                 <div className="right-column">
                   <div className="nav-outer">
                     <div className="mobile-nav-toggler">
-                      <img src="assets/images/icons/icon-bar.png" alt="" />
+                      {/* <img src="assets/images/icons/icon-bar.png" alt="" /> */}
                     </div>
 
                     <nav className="main-menu navbar-expand-md navbar-light"></nav>
                   </div>
                   <div className="search-btn"></div>
                   <div className="link-btn">
-                    <a href="/login" className="theme-btn btn-style-one">
+                    <Link to="/login" className="theme-btn btn-style-one">
                       Login
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -146,9 +150,9 @@ function Header(props) {
 
           <nav className="menu-box">
             <div className="nav-logo">
-              <a href="index.html">
+              {/* <a to="index.html">
                 <img src="assets/images/logo-two.png" alt="" title="" />
-              </a>
+              </a> */}
             </div>
             <div className="menu-outer"></div>
           </nav>

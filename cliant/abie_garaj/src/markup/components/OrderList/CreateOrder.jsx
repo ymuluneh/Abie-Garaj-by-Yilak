@@ -28,12 +28,12 @@ const decodeTokenPayload = (token) => {
 };
 
 const CreateOrder = () => {
-  // Existing state
   const [step, setStep] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [customers, setCustomers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [services, setServices] = useState([]);
+  const [inventoryItems, setInventoryItems] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedServices, setSelectedServices] = useState([]);
@@ -42,12 +42,8 @@ const CreateOrder = () => {
   const [error, setError] = useState("");
   const [servicesLoading, setServicesLoading] = useState(true);
   const [currentEmployee, setCurrentEmployee] = useState(null);
-  const navigate = useNavigate();
-
-  // New state for inventory management
-  const [inventoryItems, setInventoryItems] = useState([]);
-  const [inventoryLoading, setInventoryLoading] = useState(false);
   const [serviceQuantities, setServiceQuantities] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -144,14 +140,25 @@ const CreateOrder = () => {
   };
 
   const calculateTotal = () => {
-    return services
-      .reduce((total, service) => {
-        if (selectedServices.includes(service.service_id)) {
-          return total + parseFloat(service?.service_price || 0);
-        }
-        return total;
-      }, 0)
-      .toFixed(2);
+    let serviceTotal = services.reduce((total, service) => {
+      if (selectedServices.includes(service.service_id)) {
+        return total + parseFloat(service?.service_price || 0);
+      }
+      return total;
+    }, 0);
+
+    let materialsTotal = selectedServices.reduce((total, serviceId) => {
+      const quantities = serviceQuantities[serviceId] || {};
+      return (
+        total +
+        Object.entries(quantities).reduce((sum, [itemId, quantity]) => {
+          const item = inventoryItems.find((i) => i.item_id == itemId);
+          return sum + (item ? parseFloat(item.item_price || 0) * quantity : 0);
+        }, 0)
+      );
+    }, 0);
+
+    return (serviceTotal + materialsTotal).toFixed(2);
   };
 
   const handleSubmit = async () => {
@@ -338,7 +345,7 @@ const CreateOrder = () => {
         );
 
       case 3:
-        if (servicesLoading || inventoryLoading) {
+        if (servicesLoading) {
           return (
             <div className={styles.stepContent}>
               <h2>Select Services</h2>
@@ -405,7 +412,8 @@ const CreateOrder = () => {
                                 />
                               </label>
                               <span className={styles.currentStock}>
-                                (Available: {item.current_quantity})
+                                (Available: {item.current_quantity}) @ $
+                                {parseFloat(item.item_price || 0).toFixed(2)}
                               </span>
                             </div>
                           ))}
@@ -475,13 +483,34 @@ const CreateOrder = () => {
                       (s) => s.service_id === serviceId
                     );
                     const quantities = serviceQuantities[serviceId] || {};
+                    const materialsCost = Object.entries(quantities)
+                      .filter(([_, qty]) => qty > 0)
+                      .reduce((sum, [itemId, qty]) => {
+                        const item = inventoryItems.find(
+                          (i) => i.item_id == itemId
+                        );
+                        return (
+                          sum +
+                          (item ? parseFloat(item.item_price || 0) * qty : 0)
+                        );
+                      }, 0);
 
                     return service ? (
                       <div key={serviceId} className={styles.selectedService}>
                         <div>
                           <span>{service.service_name}</span>
                           <span>
-                            ${parseFloat(service.service_price ?? 0).toFixed(2)}
+                            $
+                            {(
+                              parseFloat(service.service_price || 0) +
+                              materialsCost
+                            ).toFixed(2)}
+                            {materialsCost > 0 && (
+                              <span className={styles.priceBreakdown}>
+                                (Service: ${service.service_price}, Materials: $
+                                {materialsCost.toFixed(2)})
+                              </span>
+                            )}
                           </span>
                         </div>
                         {Object.keys(quantities).length > 0 && (
@@ -496,7 +525,10 @@ const CreateOrder = () => {
                                 return item ? (
                                   <div key={itemId}>
                                     {item.item_name}: {qty}{" "}
-                                    {item.unit_of_measure}
+                                    {item.unit_of_measure} @ $
+                                    {parseFloat(item.item_price || 0).toFixed(
+                                      2
+                                    )}
                                   </div>
                                 ) : null;
                               })}
@@ -538,7 +570,7 @@ const CreateOrder = () => {
       case 2:
         return !selectedVehicle;
       case 3:
-        return servicesLoading || inventoryLoading;
+        return servicesLoading;
       default:
         return false;
     }

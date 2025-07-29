@@ -13,7 +13,7 @@ function CostomerProfil() {
           <AdminMenu />
         </div>
         <div className="col-md-9 admin-right-side">
-          {/* ✅ Pass it to profile page */}
+       
           <CustomerProfilePage customerId={id} />
         </div>
       </div>

@@ -37,6 +37,7 @@ import Services from "./markup/pages/admin/ServiceManagement/services";
 import AllMaterialsList from "./markup/pages/admin/InventoryManagment/AllMaterialsList";
 import ItemTransactions from "./markup/pages/admin/InventoryManagment/ItemTransactions";
 import VehicleList from "./markup/components/Admin/vehiclList";
+import Four04 from "./markup/pages/Four04";
 
 function App() {
   return (
@@ -47,14 +48,7 @@ function App() {
 
         <Route path="/login" element={<Login />} />
 
-        <Route
-          path="/admin/add-employee"
-          element={
-            <ProtectedRoute roles={[1]}>
-              <AddEmployee />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/admin/add-employee" element={<AddEmployee />} />
         <Route
           path="/admin/employees/edit/:id"
           element={
@@ -150,18 +144,38 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/admin/vehicles" element={<VehicleList />} />
-        <Route path="/admin/inventory" element={<AllMaterialsList />} />
+        <Route
+          path="/admin/vehicles"
+          element={
+            <ProtectedRoute roles={[1]}>
+              <VehicleList />{" "}
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/inventory"
+          element={
+            <ProtectedRoute roles={[1]}>
+              <AllMaterialsList />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/admin/inventory/item/:itemId"
-          element={<ItemTransactions />}
+          element={
+            <ProtectedRoute roles={[1]}>
+              <ItemTransactions />
+            </ProtectedRoute>
+          }
         />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
         <Route path="/services" element={<Service />} />
         <Route path="/Unauthorized" element={<Unauthorized />} />
         <Route path="/admin/orders/:id" element={<OrderDetail />} />
+        <Route path="*" element={<Four04 />} />
       </Routes>
+
       <Footer />
     </>
   );

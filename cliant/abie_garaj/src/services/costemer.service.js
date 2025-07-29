@@ -3,7 +3,7 @@ import getAuth from "../Util/auth"; // Import your auth service
 
 // Create Axios instance with base URL
 const api = axios.create({
-  baseURL: "http://localhost:3000/api/customer", // Update with your backend URL
+  baseURL: "https://abieback.yilakmuluneh.com/api/customer", // Update with your backend URL
   timeout: 10000,
 });
 
