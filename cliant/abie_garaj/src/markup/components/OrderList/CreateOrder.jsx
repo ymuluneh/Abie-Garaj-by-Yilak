@@ -412,7 +412,7 @@ const CreateOrder = () => {
                                 />
                               </label>
                               <span className={styles.currentStock}>
-                                (Available: {item.current_quantity}) @ $
+                                (Available: {item.current_quantity}) * $
                                 {parseFloat(item.item_price || 0).toFixed(2)}
                               </span>
                             </div>
@@ -525,7 +525,7 @@ const CreateOrder = () => {
                                 return item ? (
                                   <div key={itemId}>
                                     {item.item_name}: {qty}{" "}
-                                    {item.unit_of_measure} @ $
+                                    {item.unit_of_measure} * $
                                     {parseFloat(item.item_price || 0).toFixed(
                                       2
                                     )}
@@ -547,13 +547,13 @@ const CreateOrder = () => {
             </div>
 
             <div className={styles.reviewSection}>
-              <h3>Additional Requests</h3>
+              {/* <h3>Additional Requests</h3>
               <textarea
                 className={styles.additionalRequests}
                 value={additionalRequests}
                 onChange={(e) => setAdditionalRequests(e.target.value)}
                 placeholder="Enter any special instructions..."
-              />
+              /> */}
             </div>
           </div>
         );
@@ -611,7 +611,7 @@ const CreateOrder = () => {
 
       <div className={styles.footer}>
         <div className={styles.footerLeft}>
-          <p>
+          {/* <p>
             <strong>Email:</strong> contact@autorex.com
           </p>
           <p>
@@ -620,7 +620,7 @@ const CreateOrder = () => {
           <p>
             <strong>Address:</strong> 546. Talked! Town 5238 MT, La city, IA
             522364
-          </p>
+          </p> */}
         </div>
 
         <div className={styles.footerRight}>

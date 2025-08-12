@@ -1,10 +1,11 @@
 // services/vehicle.service.js
 import axios from "axios";
 import getAuth from "../Util/auth"; // Assuming this path is correct
+const api_url = import.meta.env.VITE_API_URL;
 
 // Create Axios instance for vehicle API calls
 const vehicleApi = axios.create({
-  baseURL: "http://localhost:3000/api/vehicle", // Ensure this matches your backend server and route prefix
+  baseURL: `${api_url}`/api/vehicle, // Ensure this matches your backend server and route prefix
   timeout: 10000,
 });
 
