@@ -7,7 +7,7 @@ const { pool } = require("./config/config"); // DB pool
 const createSchema = require("./config/dbSetup"); // ✅ Import schema creation
 const Routes = require("./routes/index");
 
-const app = express();
+const app = express();//start the cns of server  and node js
 
 // 🔹 Middlewares
 //cors allow cross-origin requests only from specfice origin
@@ -34,7 +34,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 🔹 Initialize database schema
-// createSchema(); //* Run schema.sql to create DB + tables
+createSchema(); //* Run schema.sql to create DB + tables
 
 // 🔹 Use routes
 app.use("/api", Routes);

@@ -11,6 +11,7 @@ const orderRoutes = require("./orderRoutes");
 const servicesRouter = require("./servicesRoute");
 const vehicleController = require("../controllers/vehicle.controller");
 const inventoryRoutes = require("./inventoryRoutes");
+
 Router.use("/inventory", inventoryRoutes);
 
 

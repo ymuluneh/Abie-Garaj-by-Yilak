@@ -1,12 +1,12 @@
 // services/servicesService.js
-const { pool } = require("../config/config"); // Adjust path if your config.js is elsewhere
+const { pool } = require("../config/config"); 
 
 // Fetch all ACTIVE services from the database, including price
 const getServices = async () => {
   const connection = await pool.getConnection();
   try {
     const [rows] = await connection.query(
-      "SELECT service_id, service_name, service_description, service_price FROM common_services WHERE is_active = 1" // Fetch active services and price
+      "SELECT service_id, service_name, service_description, service_price FROM common_services WHERE is_active = 1" 
     );
     return rows;
   } finally {
@@ -22,7 +22,7 @@ const getServiceById = async (serviceId) => {
       "SELECT service_id, service_name, service_description, service_price, is_active FROM common_services WHERE service_id = ?",
       [serviceId]
     );
-    return rows[0]; // Returns the first row if found, undefined otherwise
+    return rows[0]; 
   } finally {
     connection.release();
   }
