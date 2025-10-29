@@ -33,7 +33,7 @@ import OrderEdit from "./markup/components/OrderList/OrderEdit";
 import AdminDashboard from "./markup/pages/admin/AdminDashbord/AdminDashboard";
 import CreatOrder from "./markup/pages/admin/orders/CreatOrder";
 import EditEmployee from "./markup/pages/admin/EditEmployee";
-import Services from "./markup/pages/admin/ServiceManagement/services";
+import Services from "./markup/pages/admin/ServiceManagement/Services";
 import AllMaterialsList from "./markup/pages/admin/InventoryManagment/AllMaterialsList";
 import ItemTransactions from "./markup/pages/admin/InventoryManagment/ItemTransactions";
 import VehicleList from "./markup/components/Admin/vehiclList";
