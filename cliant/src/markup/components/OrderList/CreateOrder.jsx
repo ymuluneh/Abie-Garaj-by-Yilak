@@ -611,16 +611,7 @@ const CreateOrder = () => {
 
       <div className={styles.footer}>
         <div className={styles.footerLeft}>
-          {/* <p>
-            <strong>Email:</strong> contact@autorex.com
-          </p>
-          <p>
-            <strong>Phone:</strong> +1800 456 7890
-          </p>
-          <p>
-            <strong>Address:</strong> 546. Talked! Town 5238 MT, La city, IA
-            522364
-          </p> */}
+          
         </div>
 
         <div className={styles.footerRight}>
