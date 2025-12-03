@@ -35,7 +35,7 @@ function Header(props) {
               </div>
 
               <div className="phone-number">
-                <Link to="/admin">Dashboard1</Link>
+                <Link to="/admin">Dashboard2</Link>
               </div>
               <div className="right-column">
                 {isLogged ? (
